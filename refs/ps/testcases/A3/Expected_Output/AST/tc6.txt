@@ -1,0 +1,55 @@
+**PROCEDURE: main
+	Return Type: <void>
+	Formal Parameters:
+**BEGIN: Abstract Syntax Tree 
+         Asgn:
+           LHS (Name : a_<int>)
+           RHS (
+             Arith: Div<int>
+               L_Opd (
+                 Arith: Mult<int>
+                   L_Opd (
+                     Arith: Mult<int>
+                       L_Opd (
+                         Arith: Mult<int>
+                           L_Opd (
+                             Arith: Uminus<int>
+                               L_Opd (Name : b_<int>))
+                           R_Opd (
+                             Arith: Uminus<int>
+                               L_Opd (Name : c_<int>)))
+                       R_Opd (
+                         Arith: Uminus<int>
+                           L_Opd (Name : d_<int>)))
+                   R_Opd (
+                     Arith: Uminus<int>
+                       L_Opd (Name : e_<int>)))
+               R_Opd (Name : b_<int>))
+         Asgn:
+           LHS (Name : f_<int>)
+           RHS (
+             Arith: Mult<int>
+               L_Opd (
+                 Arith: Mult<int>
+                   L_Opd (
+                     Arith: Mult<int>
+                       L_Opd (
+                         Arith: Mult<int>
+                           L_Opd (
+                             Arith: Uminus<int>
+                               L_Opd (Name : a_<int>))
+                           R_Opd (
+                             Arith: Uminus<int>
+                               L_Opd (Name : a_<int>)))
+                       R_Opd (
+                         Arith: Uminus<int>
+                           L_Opd (Name : a_<int>)))
+                   R_Opd (
+                     Arith: Uminus<int>
+                       L_Opd (Name : a_<int>)))
+               R_Opd (
+                 Arith: Uminus<int>
+                   L_Opd (Name : a_<int>)))
+         Write: Name : a_<int>
+         Write: Name : f_<int>
+**END: Abstract Syntax Tree 

@@ -1,0 +1,19 @@
+**PROCEDURE: main
+**BEGIN: Three Address Code Statements
+	d_ = "hello"
+	b_ = 0.00
+	read  a_
+	temp0 = a_ / b_
+	c_ = temp0
+	write  c_
+	write  d_
+	temp1 = b_ > c_
+	temp2 = ! temp1
+	if(temp2) goto Label0
+	stemp0 = b_
+	goto Label1
+Label0:
+	stemp0 = a_
+Label1:
+	write  stemp0
+**END: Three Address Code Statements

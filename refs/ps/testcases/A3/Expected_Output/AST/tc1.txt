@@ -1,0 +1,46 @@
+**PROCEDURE: main
+	Return Type: <void>
+	Formal Parameters:
+**BEGIN: Abstract Syntax Tree 
+         Read: Name : a_<float>
+         Read: Name : b_<float>
+         Asgn:
+           LHS (Name : c_<float>)
+           RHS (
+             Arith: Div<float>
+               L_Opd (
+                 Arith: Plus<float>
+                   L_Opd (
+                     Arith: Plus<float>
+                       L_Opd (
+                         Arith: Plus<float>
+                           L_Opd (Name : a_<float>)
+                           R_Opd (Name : b_<float>))
+                       R_Opd (Num : 25.00<float>))
+                   R_Opd (Name : c_<float>))
+               R_Opd (Num : 23.00<float>))
+         Asgn:
+           LHS (Name : c_<float>)
+           RHS (
+                 Condition: LT<bool>
+                   L_Opd (
+                     Arith: Mult<float>
+                       L_Opd (Name : a_<float>)
+                       R_Opd (Name : b_<float>))
+                   R_Opd (Num : 25.00<float>)
+                 True_Part (
+                   Arith: Mult<float>
+                     L_Opd (Num : 25.00<float>)
+                     R_Opd (Num : 1100.00<float>))
+                 False_Part (
+                   Arith: Plus<float>
+                     L_Opd (
+                       Arith: Mult<float>
+                         L_Opd (Name : a_<float>)
+                         R_Opd (Name : b_<float>))
+                     R_Opd (
+                       Arith: Mult<float>
+                         L_Opd (Num : 10.00<float>)
+                         R_Opd (Name : c_<float>))))
+         Write: Name : c_<float>
+**END: Abstract Syntax Tree 

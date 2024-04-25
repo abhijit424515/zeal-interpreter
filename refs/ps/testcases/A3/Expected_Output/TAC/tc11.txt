@@ -1,0 +1,16 @@
+**PROCEDURE: main
+**BEGIN: Three Address Code Statements
+	temp0 = b_ + b_
+	a_ = temp0
+	temp1 = a_ < b_
+	temp2 = ! temp1
+	if(temp2) goto Label0
+	stemp0 = a_
+	goto Label1
+Label0:
+	stemp0 = b_
+Label1:
+	b_ = stemp0
+	s_ = "a"
+	write  s_
+**END: Three Address Code Statements

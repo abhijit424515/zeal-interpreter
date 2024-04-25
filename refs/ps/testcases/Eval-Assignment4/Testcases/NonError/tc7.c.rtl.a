@@ -1,0 +1,47 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+iLoad: v0 <- 10
+store: iterations_ <- v0
+
+Label4:
+iLoad: v0 <- 3
+store: count_ <- v0
+
+Label2:
+load: v0 <- count_
+iLoad: t1 <- 0
+sgt: t0<- v0 , t1
+not: v0<- t0
+bgtz: v0, Label3
+load: v0 <- age_
+iLoad: t1 <- 10
+sgt: t0<- v0 , t1
+not: v0<- t0
+bgtz: v0, Label1
+iLoad: v0 <- 1
+iLoad: a0 <- "yes"
+write 
+goto: Label0
+
+Label1:
+iLoad: v0 <- 1
+iLoad: a0 <- "no"
+write 
+
+Label0:
+load: v0 <- count_
+iLoad: t1 <- 1
+sub: t0<- v0 , t1
+store: count_ <- t0
+goto: Label2
+
+Label3:
+load: v0 <- iterations_
+iLoad: t1 <- 1
+sub: t0<- v0 , t1
+store: iterations_ <- t0
+load: v0 <- iterations_
+iLoad: t1 <- 0
+sgt: t0<- v0 , t1
+bgtz: t0, Label4
+**END: RTL Statements

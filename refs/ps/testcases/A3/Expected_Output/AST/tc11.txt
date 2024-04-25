@@ -1,0 +1,23 @@
+**PROCEDURE: main
+	Return Type: <void>
+	Formal Parameters:
+**BEGIN: Abstract Syntax Tree 
+         Asgn:
+           LHS (Name : a_<int>)
+           RHS (
+             Arith: Plus<int>
+               L_Opd (Name : b_<int>)
+               R_Opd (Name : b_<int>))
+         Asgn:
+           LHS (Name : b_<int>)
+           RHS (
+                 Condition: LT<bool>
+                   L_Opd (Name : a_<int>)
+                   R_Opd (Name : b_<int>)
+                 True_Part (Name : a_<int>)
+                 False_Part (Name : b_<int>))
+         Asgn:
+           LHS (Name : s_<string>)
+           RHS (String : "a"<string>)
+         Write: Name : s_<string>
+**END: Abstract Syntax Tree 

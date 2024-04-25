@@ -1,0 +1,31 @@
+**PROCEDURE: main
+	Return Type: <void>
+	Formal Parameters:
+**BEGIN: Abstract Syntax Tree 
+         Read: Name : x_<int>
+         Read: Name : y_<int>
+         Asgn:
+           LHS (Name : result_<int>)
+           RHS (
+                 Condition: AND<bool>
+                   L_Opd (
+                     Condition: LT<bool>
+                       L_Opd (Name : x_<int>)
+                       R_Opd (Name : y_<int>))
+                   R_Opd (
+                     Condition: EQ<bool>
+                       L_Opd (
+                         Arith: Plus<int>
+                           L_Opd (Name : x_<int>)
+                           R_Opd (Num : 10<int>))
+                       R_Opd (Name : y_<int>))
+                 True_Part (
+                   Arith: Mult<int>
+                     L_Opd (Name : x_<int>)
+                     R_Opd (Num : 2<int>))
+                 False_Part (
+                   Arith: Div<int>
+                     L_Opd (Name : y_<int>)
+                     R_Opd (Num : 2<int>)))
+         Write: Name : result_<int>
+**END: Abstract Syntax Tree 

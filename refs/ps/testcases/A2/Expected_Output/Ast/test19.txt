@@ -1,0 +1,29 @@
+**PROCEDURE: main
+	Return Type: <void>
+	Formal Parameters:
+**BEGIN: Abstract Syntax Tree 
+         Asgn:
+           LHS (Name : global_<int>)
+           RHS (
+                 Condition: NOT<bool>
+                   L_Opd (
+                     Condition: GT<bool>
+                       L_Opd (
+                         Arith: Minus<int>
+                           L_Opd (Name : a_<int>)
+                           R_Opd (Name : b_<int>))
+                       R_Opd (
+                         Arith: Plus<int>
+                           L_Opd (Name : a_<int>)
+                           R_Opd (Name : b_<int>)))
+                 True_Part (
+                   Arith: Div<int>
+                     L_Opd (Name : a_<int>)
+                     R_Opd (Num : 4<int>))
+                 False_Part (
+                   Arith: Mult<int>
+                     L_Opd (Name : b_<int>)
+                     R_Opd (Num : 6<int>)))
+         Write: String : "Result is:"<string>
+         Write: Name : global_<int>
+**END: Abstract Syntax Tree 

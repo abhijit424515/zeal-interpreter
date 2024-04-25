@@ -1,0 +1,28 @@
+**PROCEDURE: main
+	Return Type: <void>
+	Formal Parameters:
+**BEGIN: Abstract Syntax Tree 
+         Read: Name : __<int>
+         Read: Name : ___<int>
+         Write: 
+               Condition: EQ<bool>
+                 L_Opd (Name : __<int>)
+                 R_Opd (Name : ___<int>)
+               True_Part (
+                 Arith: Plus<int>
+                   L_Opd (
+                     Arith: Plus<int>
+                       L_Opd (
+                         Arith: Plus<int>
+                           L_Opd (Num : 4<int>)
+                           R_Opd (Num : 2<int>))
+                       R_Opd (Name : __<int>))
+                   R_Opd (Name : ___<int>))
+               False_Part (
+                 Arith: Mult<int>
+                   L_Opd (
+                     Arith: Mult<int>
+                       L_Opd (Name : __<int>)
+                       R_Opd (Num : 11<int>))
+                   R_Opd (Name : ___<int>))
+**END: Abstract Syntax Tree 

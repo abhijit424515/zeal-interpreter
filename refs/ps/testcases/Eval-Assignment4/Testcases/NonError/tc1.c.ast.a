@@ -1,0 +1,22 @@
+**PROCEDURE: main
+Return Type: <void>
+Formal Parameters:
+**BEGIN: Abstract Syntax Tree
+While:
+ Condition (
+Condition: GT<bool>
+L_Opd (Name : a_<int>) 
+R_Opd (
+Arith: Uminus <int>
+L_Opd (Num : 2<int>)))
+ Body (
+Asgn: 
+LHS (Name : a_<int>)
+RHS(Num : 2<int>))
+While:
+ Condition (
+Condition: EQ<bool>
+L_Opd (Name : a_<int>) 
+R_Opd (Num : 2<int>))
+ Body ()
+**END: Abstract Syntax Tree

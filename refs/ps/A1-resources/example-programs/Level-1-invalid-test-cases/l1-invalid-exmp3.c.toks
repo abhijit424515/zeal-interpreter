@@ -1,0 +1,15 @@
+	Token Name: INTEGER 	Lexeme: int 	 Lineno: 3
+	Token Name: NAME 	Lexeme: main 	 Lineno: 3
+	Token Name: LEFT_ROUND_BRACKET 	Lexeme: ( 	 Lineno: 3
+	Token Name: INTEGER 	Lexeme: int 	 Lineno: 3
+	Token Name: NAME 	Lexeme: a 	 Lineno: 3
+	Token Name: RIGHT_ROUND_BRACKET 	Lexeme: ) 	 Lineno: 3
+	Token Name: SEMICOLON 	Lexeme: ; 	 Lineno: 3
+	Token Name: INTEGER 	Lexeme: int 	 Lineno: 7
+	Token Name: NAME 	Lexeme: main 	 Lineno: 7
+	Token Name: LEFT_ROUND_BRACKET 	Lexeme: ( 	 Lineno: 7
+	Token Name: INTEGER 	Lexeme: int 	 Lineno: 7
+	Token Name: NAME 	Lexeme: a 	 Lineno: 7
+	Token Name: RIGHT_ROUND_BRACKET 	Lexeme: ) 	 Lineno: 7
+	Token Name: LEFT_CURLY_BRACKET 	Lexeme: { 	 Lineno: 8
+	Token Name: RIGHT_CURLY_BRACKET 	Lexeme: } 	 Lineno: 10

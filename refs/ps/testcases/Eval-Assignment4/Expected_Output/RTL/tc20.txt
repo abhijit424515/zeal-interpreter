@@ -1,0 +1,51 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+
+  Label6:      
+	load:        v0 <- _302_
+	load:        t1 <- _316_
+	seq:         t0 <- v0 , t1
+	not:         v0 <- t0
+	bgtz:        v0 , Label1
+	iLoad:       v0 <- 4
+	load_addr:   a0 <- _str_0
+	write        
+	goto:        Label0
+
+  Label1:      
+	load:        v0 <- _302_
+	load:        t1 <- _316_
+	sne:         t0 <- v0 , t1
+	not:         v0 <- t0
+	bgtz:        v0 , Label3
+	load:        v0 <- _302_
+	iLoad:       t1 <- 1
+	add:         t0 <- v0 , t1
+	store:       _302_ <- t0
+	goto:        Label2
+
+  Label3:      
+	load:        v0 <- _302_
+	load:        t1 <- _316_
+	seq:         t0 <- v0 , t1
+	not:         v0 <- t0
+	bgtz:        v0 , Label4
+	load_addr:   v0 <- _str_1
+	store:       stemp0 <- v0
+	goto:        Label5
+
+  Label4:      
+	load_addr:   v0 <- _str_2
+	store:       stemp0 <- v0
+
+  Label5:      
+	iLoad:       v0 <- 4
+	load:        a0 <- stemp0
+	write        
+
+  Label2:      
+
+  Label0:      
+	load:        v0 <- flag_
+	bgtz:        v0 , Label6
+**END: RTL Statements

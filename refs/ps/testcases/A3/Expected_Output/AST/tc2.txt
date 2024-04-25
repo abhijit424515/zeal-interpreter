@@ -1,0 +1,36 @@
+**PROCEDURE: main
+	Return Type: <void>
+	Formal Parameters:
+**BEGIN: Abstract Syntax Tree 
+         Asgn:
+           LHS (Name : x_<string>)
+           RHS (String : "CS316"<string>)
+         Asgn:
+           LHS (Name : y_<string>)
+           RHS (Name : x_<string>)
+         Asgn:
+           LHS (Name : a_<int>)
+           RHS (Num : 302<int>)
+         Asgn:
+           LHS (Name : b_<int>)
+           RHS (
+             Arith: Plus<int>
+               L_Opd (Name : a_<int>)
+               R_Opd (Num : 14<int>))
+         Read: Name : a_<int>
+         Asgn:
+           LHS (Name : b_<int>)
+           RHS (
+                 Condition: EQ<bool>
+                   L_Opd (Name : b_<int>)
+                   R_Opd (Num : 316<int>)
+                 True_Part (Name : b_<int>)
+                 False_Part (Num : 0<int>))
+         Asgn:
+           LHS (Name : x_<string>)
+           RHS (Name : flag_<bool>
+                 True_Part (Name : y_<string>)
+                 False_Part (String : "CS302"<string>))
+         Write: Name : c_<float>
+         Write: Name : d_<float>
+**END: Abstract Syntax Tree 

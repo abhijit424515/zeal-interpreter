@@ -1,0 +1,23 @@
+**PROCEDURE: main
+	Return Type: <void>
+	Formal Parameters:
+**BEGIN: Abstract Syntax Tree 
+         Asgn:
+           LHS (Name : a_<int>)
+           RHS (Num : 10<int>)
+         Asgn:
+           LHS (Name : b_<int>)
+           RHS (Num : 5<int>)
+         Asgn:
+           LHS (Name : c_<bool>)
+           RHS (
+             Condition: AND<bool>
+               L_Opd (
+                 Condition: GT<bool>
+                   L_Opd (Name : a_<int>)
+                   R_Opd (Num : 5<int>))
+               R_Opd (
+                 Condition: LT<bool>
+                   L_Opd (Name : b_<int>)
+                   R_Opd (Num : 10<int>)))
+**END: Abstract Syntax Tree 

@@ -1,0 +1,20 @@
+**PROCEDURE: main
+Return Type: <void>
+Formal Parameters:
+**BEGIN: Abstract Syntax Tree
+Read: Name : n_<int>
+Read: Name : i_<int>
+While:
+ Condition (
+Condition: LE<bool>
+L_Opd (Name : i_<int>) 
+R_Opd (Name : n_<int>))
+ Body (
+Write: Name : i_<int>
+Asgn: 
+LHS (Name : i_<int>)
+RHS(
+Arith: Plus<int>
+L_Opd (Name : i_<int>)
+R_Opd (Num : 2<int>)))
+**END: Abstract Syntax Tree

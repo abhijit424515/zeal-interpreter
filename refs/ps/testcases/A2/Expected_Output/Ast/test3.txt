@@ -1,0 +1,17 @@
+**PROCEDURE: main
+	Return Type: <void>
+	Formal Parameters:
+		a_  Type:<int>
+**BEGIN: Abstract Syntax Tree 
+         Asgn:
+           LHS (Name : c_<string>)
+           RHS (String : "asd"<string>)
+         Asgn:
+           LHS (Name : abc_<int>)
+           RHS (Num : 10<int>)
+         Asgn:
+           LHS (Name : b_<int>)
+           RHS (Num : 520<int>)
+         Read: Name : a_<int>
+         Write: Name : a_<int>
+**END: Abstract Syntax Tree 

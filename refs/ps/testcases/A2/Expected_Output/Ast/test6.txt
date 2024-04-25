@@ -1,0 +1,52 @@
+**PROCEDURE: main
+	Return Type: <void>
+	Formal Parameters:
+**BEGIN: Abstract Syntax Tree 
+         Asgn:
+           LHS (Name : time_<int>)
+           RHS (
+             Arith: Plus<int>
+               L_Opd (
+                 Arith: Mult<int>
+                   L_Opd (
+                     Arith: Div<int>
+                       L_Opd (
+                         Arith: Mult<int>
+                           L_Opd (Num : 9<int>)
+                           R_Opd (Num : 2<int>))
+                       R_Opd (Num : 3<int>))
+                   R_Opd (Num : 1<int>))
+               R_Opd (
+                 Arith: Mult<int>
+                   L_Opd (
+                     Arith: Div<int>
+                       L_Opd (
+                         Arith: Mult<int>
+                           L_Opd (Num : 5<int>)
+                           R_Opd (Num : 9<int>))
+                       R_Opd (Num : 3<int>))
+                   R_Opd (Num : 2<int>)))
+         Asgn:
+           LHS (Name : date_<int>)
+           RHS (
+                 Condition: OR<bool>
+                   L_Opd (
+                     Condition: NOT<bool>
+                       L_Opd (
+                         Condition: GT<bool>
+                           L_Opd (
+                             Arith: Mult<int>
+                               L_Opd (Name : time_<int>)
+                               R_Opd (Name : time_<int>))
+                           R_Opd (Num : 2<int>)))
+                   R_Opd (
+                     Condition: LT<bool>
+                       L_Opd (Name : time_<int>)
+                       R_Opd (Num : 10<int>))
+                 True_Part (Name : date_<int>)
+                 False_Part (
+                   Arith: Plus<int>
+                     L_Opd (Name : date_<int>)
+                     R_Opd (Num : 2<int>)))
+         Write: Name : date_<int>
+**END: Abstract Syntax Tree 

@@ -1,0 +1,19 @@
+**PROCEDURE: main
+**BEGIN: Three Address Code Statements
+	n_ = 10
+	m_ = 0
+	t_ = 1
+Label0:
+	temp0 = n_ > 0
+	temp3 = ! temp0
+	if(temp3) goto Label1
+	temp1 = m_ + t_
+	next_ = temp1
+	write  next_
+	m_ = t_
+	t_ = next_
+	temp2 = n_ - 1
+	n_ = temp2
+	goto Label0
+Label1:
+**END: Three Address Code Statements

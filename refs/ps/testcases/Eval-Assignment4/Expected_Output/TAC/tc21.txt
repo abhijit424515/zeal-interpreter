@@ -1,0 +1,13 @@
+**PROCEDURE: main
+**BEGIN: Three Address Code Statements
+	a_ = 10
+Label0:
+	temp0 = a_ > 0
+	temp2 = ! temp0
+	if(temp2) goto Label1
+	write  a_
+	temp1 = a_ - 1
+	a_ = temp1
+	goto Label0
+Label1:
+**END: Three Address Code Statements

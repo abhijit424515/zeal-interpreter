@@ -1,0 +1,6 @@
+	Token Name: INTEGER 	Lexeme: int 	 Lineno: 1
+	Token Name: NAME 	Lexeme: main 	 Lineno: 1
+	Token Name: LEFT_ROUND_BRACKET 	Lexeme: ( 	 Lineno: 1
+	Token Name: RIGHT_ROUND_BRACKET 	Lexeme: ) 	 Lineno: 1
+	Token Name: LEFT_CURLY_BRACKET 	Lexeme: { 	 Lineno: 1
+	Token Name: RIGHT_CURLY_BRACKET 	Lexeme: } 	 Lineno: 3

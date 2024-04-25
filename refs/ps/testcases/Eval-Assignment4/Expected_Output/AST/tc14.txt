@@ -1,0 +1,46 @@
+**PROCEDURE: main
+	Return Type: <void>
+	Formal Parameters:
+**BEGIN: Abstract Syntax Tree 
+         Asgn:
+           LHS (Name : val1_<int>)
+           RHS (Num : 100<int>)
+         Asgn:
+           LHS (Name : val2_<int>)
+           RHS (Num : 101<int>)
+         Asgn:
+           LHS (Name : f1_<float>)
+           RHS (Num : 3.43<float>)
+         Asgn:
+           LHS (Name : f2_<float>)
+           RHS (Num : 2.43<float>)
+         Asgn:
+           LHS (Name : f3_<float>)
+           RHS (
+             Arith: Plus<float>
+               L_Opd (
+                 Arith: Plus<float>
+                   L_Opd (
+                     Arith: Div<float>
+                       L_Opd (Name : f1_<float>)
+                       R_Opd (Name : f2_<float>))
+                   R_Opd (
+                     Arith: Uminus<float>
+                       L_Opd (Name : f2_<float>)))
+               R_Opd (
+                 Arith: Uminus<float>
+                   L_Opd (Name : f1_<float>)))
+         Asgn:
+           LHS (Name : val2_<int>)
+           RHS (
+                 Condition: GT<bool>
+                   L_Opd (Name : val1_<int>)
+                   R_Opd (Name : val2_<int>)
+                 True_Part (Name : val1_<int>)
+                 False_Part (Name : val2_<int>))
+         Write: Name : val1_<int>
+         Write: Name : val2_<int>
+         Write: Name : f1_<float>
+         Write: Name : f2_<float>
+         Write: Name : f3_<float>
+**END: Abstract Syntax Tree 

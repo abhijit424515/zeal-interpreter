@@ -1,0 +1,8 @@
+**PROCEDURE: main
+	Return Type: <void>
+	Formal Parameters:
+**BEGIN: Abstract Syntax Tree 
+         Read: Name : __<int>
+         Write: Name : __<int>
+         Write: Name : ___<float>
+**END: Abstract Syntax Tree 

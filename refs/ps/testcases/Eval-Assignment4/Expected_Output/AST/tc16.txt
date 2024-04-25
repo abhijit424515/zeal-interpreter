@@ -1,0 +1,25 @@
+**PROCEDURE: main
+	Return Type: <void>
+	Formal Parameters:
+**BEGIN: Abstract Syntax Tree 
+         Do:
+           Body (
+             Asgn:
+               LHS (Name : a_<int>)
+               RHS (
+                 Arith: Minus<int>
+                   L_Opd (Name : a_<int>)
+                   R_Opd (Num : 1<int>)))
+           While Condition (
+             Condition: GE<bool>
+               L_Opd (Name : a_<int>)
+               R_Opd (Num : 0<int>))
+         Write: 
+               Condition: GE<bool>
+                 L_Opd (Name : a_<int>)
+                 R_Opd (Num : 0<int>)
+               True_Part (Name : a_<int>)
+               False_Part (
+                 Arith: Uminus<int>
+                   L_Opd (Name : a_<int>))
+**END: Abstract Syntax Tree 

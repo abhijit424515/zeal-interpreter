@@ -1,0 +1,9 @@
+**PROCEDURE: main
+**BEGIN: Three Address Code Statements
+	l_ = 14.00
+	local_ = 14
+	global_ = 14.00
+	write  l_
+	write  local_
+	write  global_
+**END: Three Address Code Statements

@@ -1,0 +1,20 @@
+**PROCEDURE: main
+**BEGIN: Three Address Code Statements
+	local_ = 10
+	global_ = 10
+	temp0 = local_ == global_
+	temp1 = ! temp0
+	if(temp1) goto Label1
+	write  "Equal"
+	goto Label0
+Label1:
+	temp2 = local_ > global_
+	temp3 = ! temp2
+	if(temp3) goto Label3
+	write  "Local is gretaer than global"
+	goto Label2
+Label3:
+	write  "Global is greater than local"
+Label2:
+Label0:
+**END: Three Address Code Statements

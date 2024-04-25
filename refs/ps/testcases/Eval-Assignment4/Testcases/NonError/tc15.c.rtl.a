@@ -1,0 +1,32 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+load: v0 <- a_
+iLoad: t1 <- 0
+sgt: t0<- v0 , t1
+not: v0<- t0
+bgtz: v0, Label3
+iLoad: v0 <- 1
+iLoad: a0 <- "positive"
+write 
+goto: Label2
+
+Label3:
+load: v0 <- a_
+iLoad: t1 <- 0
+slt: t0<- v0 , t1
+not: v0<- t0
+bgtz: v0, Label1
+iLoad: v0 <- 1
+iLoad: a0 <- "negative"
+write 
+goto: Label0
+
+Label1:
+iLoad: v0 <- 1
+iLoad: a0 <- "zero"
+write 
+
+Label0:
+
+Label2:
+**END: RTL Statements

@@ -1,0 +1,83 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+iLoad: v0 <- 9
+iLoad: t1 <- 2
+mul: t0<- v0 , t1
+iLoad: t1 <- 3
+div: v0<- t0 , t1
+iLoad: t1 <- 1
+mul: t0<- v0 , t1
+iLoad: v0 <- 5
+iLoad: t2 <- 9
+mul: t1<- v0 , t2
+iLoad: t2 <- 3
+div: v0<- t1 , t2
+iLoad: t2 <- 2
+mul: t1<- v0 , t2
+add: v0<- t0 , t1
+store: time_ <- v0
+
+Label5:
+load: v0 <- time_
+load: t1 <- time_
+mul: t0<- v0 , t1
+iLoad: t1 <- 2
+sgt: v0<- t0 , t1
+not: t0<- v0
+load: v0 <- time_
+iLoad: t2 <- 10
+slt: t1<- v0 , t2
+or: v0<- t0 , t1
+not: t0<- v0
+bgtz: t0, Label0
+load: v0 <- date_
+store:  <- v0
+goto: Label1
+
+Label0:
+load: v0 <- date_
+iLoad: t1 <- 2
+add: t0<- v0 , t1
+store:  <- t0
+
+Label1:
+load: v0 <- 
+store: date_ <- v0
+iLoad: v0 <- 1
+load: t1 <- time_
+mul: t0<- v0 , t1
+load: t1 <- time_
+mul: v0<- t0 , t1
+load: t0 <- time_
+add: t1<- t0 , v0
+store: time_ <- t1
+iLoad: v0 <- 1
+load: a0 <- date_
+write 
+
+Label4:
+load: v0 <- time_
+iLoad: t1 <- 2
+mul: t0<- v0 , t1
+iLoad: t1 <- 1
+seq: v0<- t0 , t1
+not: t0<- v0
+bgtz: t0, Label3
+iLoad: v0 <- 10
+store: date_ <- v0
+goto: Label2
+
+Label3:
+load: v0 <- time_
+store: date_ <- v0
+
+Label2:
+load: v0 <- date_
+iLoad: t1 <- 10
+sne: t0<- v0 , t1
+bgtz: t0, Label4
+load: v0 <- date_
+iLoad: t1 <- 100
+sne: t0<- v0 , t1
+bgtz: t0, Label5
+**END: RTL Statements

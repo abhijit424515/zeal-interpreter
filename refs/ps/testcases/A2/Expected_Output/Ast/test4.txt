@@ -1,0 +1,15 @@
+**PROCEDURE: main
+	Return Type: <void>
+	Formal Parameters:
+		a_  Type:<string>
+		b_  Type:<int>
+**BEGIN: Abstract Syntax Tree 
+         Read: Name : b_<int>
+         Write: Name : a_<string>
+         Asgn:
+           LHS (Name : c_<bool>)
+           RHS (
+             Condition: GT<bool>
+               L_Opd (Name : d_<float>)
+               R_Opd (Name : e_<float>))
+**END: Abstract Syntax Tree 

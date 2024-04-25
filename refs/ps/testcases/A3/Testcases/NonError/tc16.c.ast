@@ -1,0 +1,37 @@
+**PROCEDURE: main
+	Return Type: <void>
+	Formal Parameters:
+**BEGIN: Abstract Syntax Tree 
+         Asgn:
+           LHS (Name : def_<int>)
+           RHS (Num : 1<int>)
+         Asgn:
+           LHS (Name : abc_<int>)
+           RHS (
+             Arith: Uminus<int>
+               L_Opd (Num : 2<int>))
+         Asgn:
+           LHS (Name : ghi_<int>)
+           RHS (
+             Arith: Plus<int>
+               L_Opd (
+                 Arith: Plus<int>
+                   L_Opd (Name : abc_<int>)
+                   R_Opd (Name : ghi_<int>))
+               R_Opd (Name : def_<int>))
+         Write: 
+               Condition: LT<bool>
+                 L_Opd (Name : abc_<int>)
+                 R_Opd (Name : def_<int>)
+               True_Part (Name : abc_<int>)
+               False_Part (
+                 Arith: Uminus<int>
+                   L_Opd (Name : def_<int>))
+         Write: 
+           Arith: Plus<int>
+             L_Opd (
+               Arith: Plus<int>
+                 L_Opd (Name : ghi_<int>)
+                 R_Opd (Name : def_<int>))
+             R_Opd (Num : 8<int>)
+**END: Abstract Syntax Tree 

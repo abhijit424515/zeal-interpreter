@@ -1,0 +1,32 @@
+**PROCEDURE: main
+	Return Type: <void>
+	Formal Parameters:
+**BEGIN: Abstract Syntax Tree 
+         Read: Name : a_<int>
+         Read: Name : b_<int>
+         Read: Name : c_<int>
+         While: 
+           Condition (
+             Condition: LT<bool>
+               L_Opd (Name : c_<int>)
+               R_Opd (Name : a_<int>))
+           Body (
+             Asgn:
+               LHS (Name : c_<int>)
+               RHS (
+                 Arith: Mult<int>
+                   L_Opd (Name : c_<int>)
+                   R_Opd (Num : 4<int>))
+             If: 
+               Condition (
+                 Condition: GT<bool>
+                   L_Opd (Name : c_<int>)
+                   R_Opd (Name : b_<int>))
+               Then (
+                 Asgn:
+                   LHS (Name : c_<int>)
+                   RHS (
+                     Arith: Div<int>
+                       L_Opd (Name : c_<int>)
+                       R_Opd (Num : 2<int>))))
+**END: Abstract Syntax Tree 

@@ -1,0 +1,26 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+
+  Label0:      
+	iLoad:       v0 <- 2
+	uminus:      t0 <- v0
+	load:        v0 <- a_
+	sgt:         t1 <- v0 , t0
+	not:         v0 <- t1
+	bgtz:        v0 , Label1
+	iLoad:       v0 <- 2
+	store:       a_ <- v0
+	goto:        Label0
+
+  Label1:      
+
+  Label2:      
+	load:        v0 <- a_
+	iLoad:       t1 <- 2
+	seq:         t0 <- v0 , t1
+	not:         v0 <- t0
+	bgtz:        v0 , Label3
+	goto:        Label2
+
+  Label3:      
+**END: RTL Statements

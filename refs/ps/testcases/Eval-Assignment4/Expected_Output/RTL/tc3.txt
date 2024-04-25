@@ -1,0 +1,102 @@
+**PROCEDURE: main
+**BEGIN: RTL Statements
+	iLoad:       v0 <- 5
+	read         
+	store:       date_ <- v0
+	iLoad:       v0 <- 2
+	store:       time_ <- v0
+
+  Label10:     
+	load:        v0 <- date_
+	iLoad:       t1 <- 100
+	slt:         t0 <- v0 , t1
+	not:         v0 <- t0
+	bgtz:        v0 , Label11
+	load:        v0 <- date_
+	iLoad:       t1 <- 1
+	sub:         t0 <- v0 , t1
+	store:       date_ <- t0
+
+  Label8:      
+	load:        v0 <- date_
+	iLoad:       t1 <- 100
+	slt:         t0 <- v0 , t1
+	not:         v0 <- t0
+	bgtz:        v0 , Label9
+	load:        v0 <- date_
+	load:        t1 <- date_
+	add:         t0 <- v0 , t1
+	iLoad:       t1 <- 2
+	sgt:         v0 <- t0 , t1
+	not:         t0 <- v0
+	bgtz:        t0 , Label0
+	load:        v0 <- date_
+	iLoad:       t1 <- 1
+	add:         t0 <- v0 , t1
+	store:       stemp0 <- t0
+	goto:        Label1
+
+  Label0:      
+	load:        v0 <- date_
+	iLoad:       t1 <- 2
+	add:         t0 <- v0 , t1
+	iLoad:       t1 <- 3
+	slt:         v0 <- t0 , t1
+	not:         t0 <- v0
+	bgtz:        t0 , Label2
+	load:        v0 <- date_
+	iLoad:       t1 <- 4
+	add:         t0 <- v0 , t1
+	store:       stemp1 <- t0
+	goto:        Label3
+
+  Label2:      
+	load:        v0 <- date_
+	iLoad:       t1 <- 3
+	add:         t0 <- v0 , t1
+	iLoad:       t1 <- 3
+	seq:         v0 <- t0 , t1
+	not:         t0 <- v0
+	bgtz:        t0 , Label4
+	iLoad:       v0 <- 1
+	store:       stemp2 <- v0
+	goto:        Label5
+
+  Label4:      
+	iLoad:       v0 <- 2
+	store:       stemp2 <- v0
+
+  Label5:      
+	load:        v0 <- stemp2
+	store:       stemp1 <- v0
+
+  Label3:      
+	load:        v0 <- stemp1
+	store:       stemp0 <- v0
+
+  Label1:      
+	load:        v0 <- stemp0
+	store:       date_ <- v0
+
+  Label6:      
+	load:        v0 <- date_
+	iLoad:       t1 <- 100
+	slt:         t0 <- v0 , t1
+	not:         v0 <- t0
+	bgtz:        v0 , Label7
+	load:        v0 <- date_
+	load:        t1 <- time_
+	mul:         t0 <- v0 , t1
+	store:       date_ <- t0
+	load:        v0 <- b_
+	store:       c_ <- v0
+	goto:        Label6
+
+  Label7:      
+	goto:        Label8
+
+  Label9:      
+	goto:        Label10
+
+  Label11:     
+**END: RTL Statements

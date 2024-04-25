@@ -1,0 +1,27 @@
+**PROCEDURE: main
+**BEGIN: Three Address Code Statements
+	a_ = 200
+	b_ = 300
+	read  c_
+	temp0 = a_ / b_
+	c_ = temp0
+Label0:
+	temp1 = c_ > 105
+	temp2 = a_ == 1
+	temp3 = temp1 && temp2
+	temp4 = b_ <= 2
+	temp5 = c_ >= 3
+	temp6 = temp4 && temp5
+	temp7 = temp3 || temp6
+	temp11 = ! temp7
+	if(temp11) goto Label1
+	temp8 = c_ / a_
+	temp9 = a_ - temp8
+	a_ = temp9
+	write  a_
+	temp10 = c_ - 1
+	c_ = temp10
+	goto Label0
+Label1:
+	write  c_
+**END: Three Address Code Statements

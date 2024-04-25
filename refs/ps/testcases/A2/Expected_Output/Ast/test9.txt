@@ -1,0 +1,34 @@
+**PROCEDURE: main
+	Return Type: <void>
+	Formal Parameters:
+**BEGIN: Abstract Syntax Tree 
+         Read: Name : a_<int>
+         Read: Name : b_<int>
+         Read: Name : c_<int>
+         Read: Name : d_<int>
+         Asgn:
+           LHS (Name : ans_<int>)
+           RHS (
+             Arith: Plus<int>
+               L_Opd (
+                 Arith: Plus<int>
+                   L_Opd (
+                     Arith: Plus<int>
+                       L_Opd (Name : a_<int>)
+                       R_Opd (Name : b_<int>))
+                   R_Opd (Name : c_<int>))
+               R_Opd (Name : d_<int>))
+         Write: Name : ans_<int>
+         Asgn:
+           LHS (Name : ans_<int>)
+           RHS (
+             Arith: Plus<int>
+               L_Opd (
+                 Arith: Div<int>
+                   L_Opd (
+                     Arith: Mult<int>
+                       L_Opd (Name : ans_<int>)
+                       R_Opd (Name : a_<int>))
+                   R_Opd (Name : c_<int>))
+               R_Opd (Name : d_<int>))
+**END: Abstract Syntax Tree 
