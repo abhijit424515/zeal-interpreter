@@ -2,7 +2,7 @@
 
 ## Level 1
 
-> You want to make sure the `Editor: Insert Spaces` option is turned off, else tab characters will be replaced with spaces.
+> If you are using VSCode, you want to make sure the `Editor: Insert Spaces` option in Settings is turned off, else tab characters will be replaced with spaces.
 
 ### Instructions
 
