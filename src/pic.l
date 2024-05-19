@@ -1,3 +1,7 @@
+%{
+	#include "parse.tab.h"
+%}
+
 /* DEFINITIONS */
 
 /* yywrap handles the end-of-input logic, if noyywrap is used, program exits on end-of-file (EOF) */
@@ -12,37 +16,30 @@ comment										  (#.*)
 /* RULES */
 %%
 
-read			 			{ printf("READ\n"); }
-write			 			{ printf("WRITE\n"); }
+read			 									{ return READ; }
+write			 									{ return WRITE; }
 
-=         			{ printf("ASSIGN\n"); }
-,         			{ printf("COMMA\n"); }
-\(        			{ printf("LRB\n"); }
-\)        			{ printf("RRB\n"); }
-\{        			{ printf("LCB\n"); }
-\}        			{ printf("RCB\n"); }
-"+"       			{ printf("PLUS\n"); }
-"-"       			{ printf("MINUS\n"); }
-"*"       			{ printf("MULT\n"); }
-"/"       			{ printf("DIV\n"); }
+=         									{ return ASSIGN; }
+,         									{ return COMMA; }
+\(        									{ return LRB; }
+\)        									{ return RRB; }
+\{        									{ return LCB; }
+\}        									{ return RCB; }
+"+"       									{ return PLUS; }
+"-"       									{ return MINUS; }
+"*"       									{ return MULT; }
+"/"       									{ return DIV; }
 
-"\t"      			{ printf("tab\n"); }
-"\n"      			{ printf("newline\n"); }
-" "       			;
+"\t"      									{ return TAB; }
+"\n"      									{ return NEWLINE; }
+" "       									;
 
-\"([^\"]*)\"								{ printf("STR_CONST\n"); }
-{frac}											{ printf("FLT_CONST\n"); }
-{digit}+										{ printf("INT_CONST\n"); }
-{letter}({letter}|{digit})* { printf("NAME\n"); }
-{comment}										{ printf("COMMENT\n"); }
+\"([^\"]*)\"								{ return STR_CONST; }
+{frac}											{ return FLT_CONST; }
+{digit}+										{ return INT_CONST; }
+{letter}({letter}|{digit})* { return NAME; }
+{comment}										{ return COMMENT; }
 
-.         			{ fprintf(stderr, "unknown_token: %d\n", yytext[0]); exit(1); }
+.         									{ fprintf(stderr, "unknown_token: %d\n", yytext[0]); exit(1); }
 
 %%
-
-/* ADDITIONAL C CODE */
-
-int main(){
-  yylex();
-  return 0;
-}

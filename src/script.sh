@@ -1,20 +1,22 @@
 SOURCE="pic"
 TARGET="runme"
+CFLAGS="--std=c++0x -g"
 
-run() {
+compile() {
 	clear
-	lex -l --yylineno -o scan.c $SOURCE.l && g++ --std=c++0x -g -c scan.c -o scan.o
-	g++ --std=c++0x scan.o -o $TARGET
-
-	./$TARGET
+	bison -b parse -dv pic.y															# generate parser using pic.y
+	flex -l --yylineno -o scan.c $SOURCE.l								# generate scanner using pic.l 
+	g++ $CFLAGS -c scan.c																	# compile scanner
+	g++ $CFLAGS -Wno-write-strings -c parse.tab.c					# compile parser 
+	g++ $CFLAGS scan.o parse.tab.o -o $TARGET -ly					# link the object files to create target
 }
 
 clean() {
-  rm -f scan.c scan.o $TARGET
+  rm -f scan.c scan.o parse.tab.c parse.tab.h parse.output parse.tab.o $TARGET
 }
 
 case $1 in
-  run) run ;;
-  clean) clean ;;
-  *) echo "Usage: $0 {run|clean}" ;;
+  compile) compile ;;
+	clean) clean ;;
+  *) echo "Usage: $0 {compile|clean}" ;;
 esac
