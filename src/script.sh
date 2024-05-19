@@ -2,11 +2,15 @@ SOURCE="pic"
 TARGET="runme"
 
 run() {
-  clear && flex $SOURCE.l && g++ lex.yy.c -o $TARGET && ./$TARGET
+	clear
+	lex -l --yylineno -o scan.c $SOURCE.l && g++ --std=c++0x -g -c scan.c -o scan.o
+	g++ --std=c++0x scan.o -o $TARGET
+
+	./$TARGET
 }
 
 clean() {
-  rm -f lex.yy.c $TARGET
+  rm -f scan.c scan.o $TARGET
 }
 
 case $1 in
