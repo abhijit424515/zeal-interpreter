@@ -1,3 +1,4 @@
-a = 1
+	a = 1
+		xy = 34
 
-xy = 34
+# "\t"												{ tabs++; } /* Ignore tabs */

@@ -1,5 +1,6 @@
 %{
 	#include "parse.tab.h"
+	#include <string.h>
 %}
 
 /* DEFINITIONS */
@@ -9,7 +10,7 @@
 
 digit                       [0-9]
 frac                        (([0-9]*\.[0-9]+)|([0-9]+\.[0-9]*))
-ws	                        [ \t\n]*
+indent	                    [\t]+
 letter                      [a-zA-Z_]
 comment										  (#.*)
 
@@ -18,6 +19,7 @@ comment										  (#.*)
 
 read			 									{ return READ; }
 write			 									{ return WRITE; }
+loop												{ return LOOP; }
 
 =         									{ return ASSIGN; }
 ,         									{ return COMMA; }
@@ -30,15 +32,15 @@ write			 									{ return WRITE; }
 "*"       									{ return MULT; }
 "/"       									{ return DIV; }
 
-"\t"      									{ return TAB; }
-"\n"      									{ return NEWLINE; }
-" "       									;
+"\n"                        { return NEWLINE; }
+{indent}										{ yylval = strlen(yytext); return INDENT; }
+" "       									; /* Ignore spaces */
 
 \"([^\"]*)\"								{ return STR_CONST; }
 {frac}											{ return FLT_CONST; }
 {digit}+										{ return INT_CONST; }
 {letter}({letter}|{digit})* { return NAME; }
-{comment}										{ return COMMENT; }
+{comment}										;
 
 .         									{ fprintf(stderr, "unknown_token: %d\n", yytext[0]); exit(1); }
 

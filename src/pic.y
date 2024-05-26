@@ -3,11 +3,9 @@
 
 	extern "C" void yyerror(char *s);
 	extern int yylex(void);
-
-	int decl_count = 0;
 %}
 
-%token READ WRITE ASSIGN COMMA LRB RRB LCB RCB PLUS MINUS MULT DIV TAB NEWLINE STR_CONST FLT_CONST INT_CONST NAME COMMENT
+%token READ WRITE ASSIGN COMMA LRB RRB LCB RCB PLUS MINUS MULT DIV NEWLINE STR_CONST FLT_CONST INT_CONST NAME COMMENT LOOP INDENT
 
 %%
 
@@ -15,18 +13,27 @@ program
 	:	stmt_list
 ;
 
+loop
+	:	LOOP NEWLINE idt_stmt_list						// stmt_list will store the indent of the compound statements
+;
+
+idt_stmt_list
+	:	INDENT stmt_list
+;
+
 stmt_list
-	:	stmt_list stmt
+	:	stmt_list stmt										// ensure that all stmts have same indent, else 
 	|	%empty
 ;
 
 stmt
-	:	decl
+	:	INDENT decl NEWLINE											{ printf("TB: %d\n", $1); }
 	| NEWLINE
+	// |	loop
 ;
 
 decl
-	:	NAME ASSIGN constant NEWLINE			{ printf("DECL %d\n", ++decl_count); }
+	:	NAME ASSIGN constant
 ;
 
 constant
