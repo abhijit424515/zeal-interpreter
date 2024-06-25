@@ -2,6 +2,8 @@
 	#include "pic.cc"
 	extern "C" void yyerror(const char *s);
 	extern int yylex(void);
+
+	int indent = 0;
 %}
 
 %union{

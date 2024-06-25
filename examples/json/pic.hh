@@ -14,6 +14,7 @@ struct JSON;
 struct JSONArray;
 
 struct JSONValue {
+	int indent = 0;
 	JSONType vtype;
 	void *value;
 
@@ -43,12 +44,13 @@ struct JSONValue {
 	}
 	JSONValue(const JSON& x);
 	JSONValue(const JSONArray& x);
-  ~JSONValue();
+  	~JSONValue();
 
 	void print(int depth);
 };
 
 struct JSON {
+	int indent = 0;
 	map<string,JSONValue*> pairs;
 
 	JSON() {}
@@ -59,6 +61,7 @@ struct JSON {
 };
 
 struct JSONArray {
+	int indent = 0;
 	vector<JSON*> objects;
 
 	JSONArray() {}

@@ -3,11 +3,13 @@
 JSONValue::JSONValue(const JSON& x) {
 	vtype = JSON_OBJECT;
 	value = new JSON(x);
+	indent = x.indent;
 }
 
 JSONValue::JSONValue(const JSONArray& x) {
 	vtype = JSON_ARRAY;
 	value = new JSONArray(x);
+	indent = x.indent;
 }
 
 JSONValue::~JSONValue() {
@@ -80,6 +82,8 @@ map<string,JSONValue*>* append_list_pair(map<string,JSONValue*> *m, pair<string,
 JSON* create_obj(map<string,JSONValue*>* pairs) {
 	JSON* j = new JSON();
 	if (pairs != nullptr) j->pairs = *pairs;
+	for (auto it = pairs->begin(); it != pairs->end(); it++) 
+		it->second->indent++;
 	return j;
 }
 
@@ -92,5 +96,8 @@ vector<JSON*>* append_list_obj(vector<JSON*> *l, JSON* o) {
 JSONArray* create_ja(vector<JSON*> *objs) {
 	JSONArray *ja = new JSONArray();
 	if (objs != nullptr) ja->objects = *objs;
+
+
+
 	return ja;
 }
