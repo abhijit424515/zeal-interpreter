@@ -28,7 +28,7 @@ scan.c : $(SCAN) parse.tab.h
 	$(FLEX) -l --yylineno -o scan.c $(SCAN)
 
 parse.tab.c parse.tab.h : $(PARSE)
-	$(BISON) -b parse -dv  $(PARSE)
+	$(BISON) -b parse -dv  $(PARSE) -Wcounterexamples
 
 clean :
 	rm -f *.o *.output

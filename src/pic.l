@@ -30,12 +30,12 @@ else						{ return ELSE; }
 \*							{ return '*'; }
 \/							{ return '/'; }
 \^							{ return '^'; }
-\<							{ return LT; }
-\>							{ return GT; }
+\<							{ return '<'; }
+\>							{ return '>'; }
 ==							{ return EQ; }
-\<							{ return LE; }
-\>							{ return GE; }
 !=							{ return NE; }
+\<=							{ return LE; }
+\>=							{ return GE; }
 &&							{ return AND; }
 \|\|						{ return OR; }
 \!							{ return NOT; }
