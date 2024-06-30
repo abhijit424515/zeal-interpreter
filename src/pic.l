@@ -38,7 +38,7 @@ else						{ return ELSE; }
 \>=							{ return GE; }
 &&							{ return AND; }
 \|\|						{ return OR; }
-\!							{ return NOT; }
+\!							{ return '!'; }
 \(							{ return '('; }
 \)							{ return ')'; }
 \{							{ return '{'; }

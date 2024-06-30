@@ -12,12 +12,18 @@
 	StmtWrapper *stmt_wrap;
 }
 
-%token LET RETURN TRUE_VAL FALSE_VAL IF ELSE EQ NE LE GE AND OR NOT INT_VAL FLT_VAL IDF STR_VAL
+%token LET RETURN TRUE_VAL FALSE_VAL IF ELSE EQ NE LE GE AND OR INT_VAL FLT_VAL IDF STR_VAL
 
+%left OR
+%left AND
+%right '!'
+%nonassoc LE GE '<' '>' EQ NE
 %left '+' '-'
 %left '*' '/'
 %right Uminus
-%right Not
+%right '%'
+%nonassoc IFX
+%nonassoc ELSE
 
 %type <prog> program
 %type <stmt_wrap> stmt_list
@@ -53,8 +59,8 @@ ret_stmt
 ;
 
 if_stmt
-	: IF '(' exp ')' stmt			{ $$ = new IfStmt($3, $5, NULL); }
-	| IF '(' exp ')' stmt ELSE stmt	{ $$ = new IfStmt($3, $5, $7); }
+	: IF '(' exp ')' stmt ELSE stmt	{ $$ = new IfStmt($3, $5, $7); }
+	| IF '(' exp ')' stmt %prec IFX	{ $$ = new IfStmt($3, $5, NULL); }
 ;
 
 exp_stmt
@@ -75,7 +81,7 @@ exp
 
 prefix_exp
 	: '-' exp %prec Uminus			{ $$ = new PrefixExp(NEG_PROP, $2); }
-	| '!' exp %prec Not				{ $$ = new PrefixExp(NOT_PROP, $2); }
+	| '!' exp						{ $$ = new PrefixExp(NOT_PROP, $2); }
 ;
 
 infix_exp
@@ -84,14 +90,14 @@ infix_exp
 	| exp '*' exp					{ $$ = new InfixExp($1, MUL_INOP, $3); }
 	| exp '/' exp					{ $$ = new InfixExp($1, DIV_INOP, $3); }
 	| exp '%' exp					{ $$ = new InfixExp($1, MOD_INOP, $3); }
-	| exp "==" exp					{ $$ = new InfixExp($1, EQ_INOP, $3); }
-	| exp "!=" exp					{ $$ = new InfixExp($1, NE_INOP, $3); }
-	| exp "<" exp					{ $$ = new InfixExp($1, LT_INOP, $3); }
-	| exp "<=" exp					{ $$ = new InfixExp($1, LE_INOP, $3); }
-	| exp ">" exp					{ $$ = new InfixExp($1, GT_INOP, $3); }
-	| exp ">=" exp					{ $$ = new InfixExp($1, GE_INOP, $3); }
-	| exp "&&" exp					{ $$ = new InfixExp($1, AND_INOP, $3); }
-	| exp "||" exp					{ $$ = new InfixExp($1, OR_INOP, $3); }
+	| exp EQ exp					{ $$ = new InfixExp($1, EQ_INOP, $3); }
+	| exp NE exp					{ $$ = new InfixExp($1, NE_INOP, $3); }
+	| exp '<' exp					{ $$ = new InfixExp($1, LT_INOP, $3); }
+	| exp LE exp					{ $$ = new InfixExp($1, LE_INOP, $3); }
+	| exp '>' exp					{ $$ = new InfixExp($1, GT_INOP, $3); }
+	| exp GE exp					{ $$ = new InfixExp($1, GE_INOP, $3); }
+	| exp AND exp					{ $$ = new InfixExp($1, AND_INOP, $3); }
+	| exp OR exp					{ $$ = new InfixExp($1, OR_INOP, $3); }
 ;
 
 %%
