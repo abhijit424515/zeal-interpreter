@@ -3,60 +3,64 @@
 
 #include "obj.hh"
 
-extern unordered_map<string,Object*> table;
+enum class PrefixOp;
+enum class InfixOp;
+
 extern bool repl;
+extern unordered_map<string,Object*> table;
+extern unordered_map<ObjType,string> objtype_str;
+extern unordered_map<PrefixOp,string> prefix_str;
+extern unordered_map<InfixOp,string> infix_str;
 
-enum NodeType {
-	PROG_NODE,
-	STMT_NODE,
-	EXPR_NODE
+enum class NodeType {
+	PROG,
+	STMT,
+	EXPR
 };
 
-enum StmtType {
-	LET_STMT,
-	ASG_STMT,
-	RETURN_STMT,
-	IF_STMT,
-	EXP_STMT,
+enum class StmtType {
+	LET,
+	ASG,
+	RETURN,
+	IF,
+	EXP,
 };
 
-enum ExpType {
-	CONST_EXP,
-	ID_EXP,
-	PREFIX_EXP,
-	INFIX_EXP,
+enum class ExpType {
+	CONST,
+	ID,
+	PREFIX,
+	INFIX,
 };
 
-enum ConstType {
-	INT_CST,
-	FLT_CST,
-	STR_CST,
-	BOOL_CST,
-	NONE_CST,
+enum class ConstType {
+	INT,
+	FLT,
+	STR,
+	BOOL,
+	NONE,
 };
 
-enum PrefixOp {
-	NEG_PROP,
-	NOT_PROP,
+enum class PrefixOp {
+	NEG,
+	NOT,
 };
-string to_string(const PrefixOp& op);
 
-enum InfixOp {
-	ADD_INOP,
-	SUB_INOP,
-	MUL_INOP,
-	DIV_INOP,
-	MOD_INOP,
-	EQ_INOP,
-	NE_INOP,
-	LT_INOP,
-	LE_INOP,
-	GT_INOP,
-	GE_INOP,
-	AND_INOP,
-	OR_INOP,
+enum class InfixOp {
+	ADD,
+	SUB,
+	MUL,
+	DIV,
+	MOD,
+	EQ,
+	NE,
+	LT,
+	LE,
+	GT,
+	GE,
+	AND,
+	OR,
 };
-string to_string(const InfixOp& op);
 
 struct Node {
 	NodeType ntype;
@@ -96,8 +100,8 @@ struct StmtWrapper {
 struct Program: Node {
 	vector<Statement*> stmt_list;
 
-	Program() { ntype = PROG_NODE; }
-	Program(StmtWrapper *s): stmt_list(s->stmts) { ntype = PROG_NODE; }
+	Program() { ntype = NodeType::PROG; }
+	Program(StmtWrapper *s): stmt_list(s->stmts) { ntype = NodeType::PROG; }
 	~Program() {
 		for (auto stmt : stmt_list)
 			delete stmt;
@@ -113,7 +117,7 @@ struct LetStmt: Statement {
 	string id;
 	Expression* value;
 
-	LetStmt(const string& n, Expression* e): id(n), value(e) { stype = LET_STMT; }
+	LetStmt(const string& n, Expression* e): id(n), value(e) { stype = StmtType::LET; }
 	~LetStmt() { delete value; }
 	void code() override {
 		value->code();
@@ -129,7 +133,7 @@ struct AsgStmt: Statement {
 	string id;
 	Expression* value;
 
-	AsgStmt(const string& n, Expression* e): id(n), value(e) { stype = ASG_STMT; }
+	AsgStmt(const string& n, Expression* e): id(n), value(e) { stype = StmtType::ASG; }
 	~AsgStmt() { delete value; }
 	void code() override {
 		value->code();
@@ -144,7 +148,7 @@ struct AsgStmt: Statement {
 struct RetStmt: Statement {
 	Expression* value;
 
-	RetStmt(Expression* e): value(e) { stype = RETURN_STMT; }
+	RetStmt(Expression* e): value(e) { stype = StmtType::RETURN; }
 	~RetStmt() { delete value; }
 	void code() override {
 		value->code();
@@ -156,7 +160,7 @@ struct IfStmt: Statement {
 	Statement* then;
 	Statement* els;
 
-	IfStmt(Expression* c, Statement* t, Statement* e): cond(c), then(t), els(e) { stype = IF_STMT; }
+	IfStmt(Expression* c, Statement* t, Statement* e): cond(c), then(t), els(e) { stype = StmtType::IF; }
 	~IfStmt() {
 		delete cond;
 		delete then;
@@ -164,7 +168,7 @@ struct IfStmt: Statement {
 	}
 	void code() override {
 		cond->code();
-		if (cond->value->type != ObjType::BOOL_OBJ) {
+		if (cond->value->type != ObjType::BOOL) {
 			cerr << "[error] IfStmt::code()" << endl;
 			exit(1);
 		}
@@ -176,7 +180,7 @@ struct IfStmt: Statement {
 struct ExpStmt: Statement {
 	Expression* value;
 
-	ExpStmt(Expression* e): value(e) { stype = EXP_STMT; }
+	ExpStmt(Expression* e): value(e) { stype = StmtType::EXP; }
 	~ExpStmt() { delete value; }
 	void code() override {
 		value->code();
@@ -190,28 +194,31 @@ struct Const: Expression {
 	ConstType ctype;
 
 	Const(string v, ConstType t): ctype(t) {
-		etype = CONST_EXP;
+		etype = ExpType::CONST;
 		switch (t) {
-			case INT_CST: value = new Int(stoi(v)); break;
-			case FLT_CST: value = new Double(stof(v)); break;
-			case STR_CST: value = new String(v); break;
-			case NONE_CST: value = new None(); break;
+			case ConstType::INT: value = new Int(stoi(v)); break;
+			case ConstType::FLT: value = new Double(stof(v)); break;
+			case ConstType::STR: value = new String(v); break;
 			default: 
 				cerr << "[error] Const::Const(string v, ConstType t)" << endl;
 				exit(1);
 		}
 	}
-	Const(bool v): ctype(BOOL_CST) {
-		etype = CONST_EXP;
+	Const(): ctype(ConstType::NONE) {
+		etype = ExpType::CONST;
+		value = new None();
+	}
+	Const(bool v): ctype(ConstType::BOOL) {
+		etype = ExpType::CONST;
 		value = new Bool(v);
 	}
 	~Const() {
 		switch (ctype) {
-			case INT_CST: delete (Int*)value; break;
-			case FLT_CST: delete (Double*)value; break;
-			case STR_CST: delete (String*)value; break;
-			case BOOL_CST: delete (Bool*)value; break;
-			case NONE_CST: delete (None*)value; break;
+			case ConstType::INT: delete (Int*)value; break;
+			case ConstType::FLT: delete (Double*)value; break;
+			case ConstType::STR: delete (String*)value; break;
+			case ConstType::BOOL: delete (Bool*)value; break;
+			case ConstType::NONE: delete (None*)value; break;
 			default: 
 				cerr << "[error] Const::~Const()" << endl;
 				exit(1);
@@ -223,13 +230,10 @@ struct Const: Expression {
 struct Idf : Expression {
 	string name;
 
-	Idf(const string& n): name(n) { etype = ID_EXP; }
+	Idf(const string& n): name(n) { etype = ExpType::ID; }
 	void code() override {
-		if (table.find(name) == table.end()) {
-			cerr << "[error] Idf::Idf(const string& n)" << endl;
-			exit(1);
-		}
-		value = table[name];
+		if (table.find(name) == table.end()) value = new Error(UNDEF_ERR, name);
+		else value = table[name];
 	}
 };
 
@@ -237,30 +241,27 @@ struct PrefixExp : Expression {
 	PrefixOp op;
 	Expression* right;
 
-	PrefixExp(PrefixOp o, Expression* r): op(o), right(r) { etype = PREFIX_EXP; }
+	PrefixExp(PrefixOp o, Expression* r): op(o), right(r) { etype = ExpType::PREFIX; }
 	~PrefixExp() { delete right; }
 	void code() override {
 		right->code();
 		switch (op) {
-			case NEG_PROP:
-				if (right->value->type == ObjType::INT_OBJ) {
+			case PrefixOp::NEG:
+				if (right->value->type == ObjType::INT)
 					value = new Int(-(*(int*)(right->value->value)));
-				} else if (right->value->type == ObjType::FLT_OBJ) {
+				else if (right->value->type == ObjType::FLT)
 					value = new Double(-*(double*)(right->value->value));
-				} else {
-					cerr << "[error] PrefixExp::PrefixExp(PrefixOp o, Expression* r) { NEG_PROP }" << endl;
-					exit(1);
-				}
+				else
+					value = new Error(UNSOP_ERR, prefix_str[op] + right->value->str());
 				break;
-			case NOT_PROP:
-				if (right->value->type != ObjType::BOOL_OBJ) {
-					cerr << "[error] PrefixExp::PrefixExp(PrefixOp o, Expression* r) { NOT_PROP }" << endl;
-					exit(1);
-				}
-				value = new Bool(!*((bool*)right->value->value));
+			case PrefixOp::NOT:
+				if (right->value->type != ObjType::BOOL)
+					value = new Error(UNSOP_ERR, prefix_str[op] + right->value->str());
+				else 
+					value = new Bool(!*((bool*)right->value->value));
 				break;
 			default:
-				cerr << "[error] PrefixExp::PrefixExp(PrefixOp o, Expression* r) { default }" << endl;
+				cerr << "[error] PrefixExp::PrefixExp(PrefixOp o, Expression* r)" << endl;
 				exit(1);
 		}
 	}
@@ -271,7 +272,7 @@ struct InfixExp : Expression {
 	InfixOp op;
 	Expression* right;
 
-	InfixExp(Expression* l, InfixOp o, Expression* r): left(l), op(o), right(r) { etype = INFIX_EXP; }
+	InfixExp(Expression* l, InfixOp o, Expression* r): left(l), op(o), right(r) { etype = ExpType::INFIX; }
 	~InfixExp() {
 		delete left, right;
 	}
@@ -282,159 +283,95 @@ struct InfixExp : Expression {
 		if (left->value->type == right->value->type) {
 			ObjType t = left->value->type;
 			bool v = false;
+			bool inv = false;
+
 			switch (op) {
-				case ADD_INOP:
-					if (t == ObjType::INT_OBJ) {
-						value = new Int(*(int*)lv + *(int*)rv);
-					} else if (t == ObjType::FLT_OBJ) {
-						value = new Double(*(double*)lv + *(double*)rv);
-					} else if (t == ObjType::STR_OBJ) {
-						value = new String(*(string*)lv + *(string*)rv);
-					} else {
-						cerr << "[error] InfixExp::InfixExp(Expression* l, InfixOp o, Expression* r) { ADD_INOP }" << endl;
-						exit(1);
-					}
+				case InfixOp::ADD:
+					if (t == ObjType::INT) value = new Int(*(int*)lv + *(int*)rv);
+					else if (t == ObjType::FLT) value = new Double(*(double*)lv + *(double*)rv);
+					else if (t == ObjType::STR) value = new String(*(string*)lv + *(string*)rv);
+					else inv = true;
 					break;
-				case SUB_INOP:
-					if (t == ObjType::INT_OBJ) {
-						value = new Int(*(int*)lv - *(int*)rv);
-					} else if (t == ObjType::FLT_OBJ) {
-						value = new Double(*(double*)lv - *(double*)rv);
-					} else {
-						cerr << "[error] InfixExp::InfixExp(Expression* l, InfixOp o, Expression* r) { SUB_INOP }" << endl;
-						exit(1);
-					}
+				case InfixOp::SUB:
+					if (t == ObjType::INT) value = new Int(*(int*)lv - *(int*)rv);
+					else if (t == ObjType::FLT) value = new Double(*(double*)lv - *(double*)rv);
+					else inv = true;
 					break;
-				case MUL_INOP:
-					if (t == ObjType::INT_OBJ) {
-						value = new Int(*(int*)lv * *(int*)rv);
-					} else if (t == ObjType::FLT_OBJ) {
-						value = new Double(*(double*)lv * *(double*)rv);
-					} else {
-						cerr << "[error] InfixExp::InfixExp(Expression* l, InfixOp o, Expression* r) { MUL_INOP }" << endl;
-						exit(1);
-					}
+				case InfixOp::MUL:
+					if (t == ObjType::INT) value = new Int(*(int*)lv * *(int*)rv);
+					else if (t == ObjType::FLT) value = new Double(*(double*)lv * *(double*)rv);
+					else inv = true;
 					break;
-				case DIV_INOP:
-					if (t == ObjType::INT_OBJ) {
-						value = new Int(*(int*)lv / *(int*)rv);
-					} else if (t == ObjType::FLT_OBJ) {
-						value = new Double(*(double*)lv / *(double*)rv);
-					} else {
-						cerr << "[error] InfixExp::InfixExp(Expression* l, InfixOp o, Expression* r) { DIV_INOP }" << endl;
-						exit(1);
-					}
+				case InfixOp::DIV:
+					if (t == ObjType::INT) value = new Int(*(int*)lv / *(int*)rv);
+					else if (t == ObjType::FLT) value = new Double(*(double*)lv / *(double*)rv);
+					else inv = true;
 					break;
-				case MOD_INOP:
-					if (t == ObjType::INT_OBJ) {
-						value = new Int(*(int*)lv % *(int*)rv);
-					} else {
-						cerr << "[error] InfixExp::InfixExp(Expression* l, InfixOp o, Expression* r) { MOD_INOP }" << endl;
-						exit(1);
-					}
+				case InfixOp::MOD:
+					if (t == ObjType::INT) value = new Int(*(int*)lv % *(int*)rv);
+					else inv = true;
 					break;
-				case EQ_INOP:
-					if (t == ObjType::INT_OBJ) {
-						v = *(int*)lv == *(int*)rv;
-					} else if (t == ObjType::FLT_OBJ) {
-						v = *(double*)lv == *(double*)rv;
-					} else if (t == ObjType::STR_OBJ) {
-						v = *(string*)lv == *(string*)rv;
-					} else if (t == ObjType::BOOL_OBJ) {
-						v = *(bool*)lv == *(bool*)rv;
-					} else if (t == ObjType::NONE_OBJ) {
-						v = true;
-					} else {
-						cerr << "[error] InfixExp::InfixExp(Expression* l, InfixOp o, Expression* r) { EQ_INOP }" << endl;
-						exit(1);
-					}
-					value = new Bool(v);
+				case InfixOp::EQ:
+					if (t == ObjType::INT) v = *(int*)lv == *(int*)rv;
+					else if (t == ObjType::FLT) v = *(double*)lv == *(double*)rv;
+					else if (t == ObjType::STR) v = *(string*)lv == *(string*)rv;
+					else if (t == ObjType::BOOL) v = *(bool*)lv == *(bool*)rv;
+					else if (t == ObjType::NONE) v = true;
+					else inv = true;
+					if (!inv) value = new Bool(v);
 					break;
-				case NE_INOP:
-					if (t == ObjType::INT_OBJ) {
-						v = *(int*)lv != *(int*)rv;
-					} else if (t == ObjType::FLT_OBJ) {
-						v = *(double*)lv != *(double*)rv;
-					} else if (t == ObjType::STR_OBJ) {
-						v = *(string*)lv != *(string*)rv;
-					} else if (t == ObjType::BOOL_OBJ) {
-						v = *(bool*)lv != *(bool*)rv;
-					} else if (t == ObjType::NONE_OBJ) {
-						v = false;
-					} else {
-						cerr << "[error] InfixExp::InfixExp(Expression* l, InfixOp o, Expression* r) { NE_INOP }" << endl;
-						exit(1);
-					}
-					value = new Bool(v);
+				case InfixOp::NE:
+					if (t == ObjType::INT) v = *(int*)lv != *(int*)rv;
+					else if (t == ObjType::FLT) v = *(double*)lv != *(double*)rv;
+					else if (t == ObjType::STR) v = *(string*)lv != *(string*)rv;
+					else if (t == ObjType::BOOL) v = *(bool*)lv != *(bool*)rv;
+					else if (t == ObjType::NONE) v = false;
+					else inv = true;
+
+					if (!inv) value = new Bool(v);
 					break;
-				case LT_INOP:
-					if (t == ObjType::INT_OBJ) {
-						v = *(int*)lv < *(int*)rv;
-					} else if (t == ObjType::FLT_OBJ) {
-						v = *(double*)lv < *(double*)rv;
-					} else {
-						cerr << "[error] InfixExp::InfixExp(Expression* l, InfixOp o, Expression* r) { LT_INOP }" << endl;
-						exit(1);
-					}
-					value = new Bool(v);
+				case InfixOp::LT:
+					if (t == ObjType::INT) v = *(int*)lv < *(int*)rv;
+					else if (t == ObjType::FLT) v = *(double*)lv < *(double*)rv;
+					else inv = true;
+				
+					if (!inv) value = new Bool(v);
 					break;
-				case LE_INOP:
-					if (t == ObjType::INT_OBJ) {
-						v = *(int*)lv <= *(int*)rv;
-					} else if (t == ObjType::FLT_OBJ) {
-						v = *(double*)lv <= *(double*)rv;
-					} else {
-						cerr << "[error] InfixExp::InfixExp(Expression* l, InfixOp o, Expression* r) { LE_INOP }" << endl;
-						exit(1);
-					}
-					value = new Bool(v);
+				case InfixOp::LE:
+					if (t == ObjType::INT) v = *(int*)lv <= *(int*)rv;
+					else if (t == ObjType::FLT) v = *(double*)lv <= *(double*)rv;
+					else inv = true;
+
+					if (!inv) value = new Bool(v);
 					break;
-				case GT_INOP:
-					if (t == ObjType::INT_OBJ) {
-						v = *(int*)lv > *(int*)rv;
-					} else if (t == ObjType::FLT_OBJ) {
-						v = *(double*)lv > *(double*)rv;
-					} else {
-						cerr << "[error] InfixExp::InfixExp(Expression* l, InfixOp o, Expression* r) { GT_INOP }" << endl;
-						exit(1);
-					}
-					value = new Bool(v);
+				case InfixOp::GT:
+					if (t == ObjType::INT) v = *(int*)lv > *(int*)rv;
+					else if (t == ObjType::FLT) v = *(double*)lv > *(double*)rv;
+					else inv = true;
+
+					if (!inv) value = new Bool(v);
 					break;
-				case GE_INOP:
-					if (t == ObjType::INT_OBJ) {
-						v = *(int*)lv >= *(int*)rv;
-					} else if (t == ObjType::FLT_OBJ) {
-						v = *(double*)lv >= *(double*)rv;
-					} else {
-						cerr << "[error] InfixExp::InfixExp(Expression* l, InfixOp o, Expression* r) { GE_INOP }" << endl;
-						exit(1);
-					}
-					value = new Bool(v);
+				case InfixOp::GE:
+					if (t == ObjType::INT) v = *(int*)lv >= *(int*)rv;
+					else if (t == ObjType::FLT)	v = *(double*)lv >= *(double*)rv;
+					else inv = true;
+
+					if (!inv) value = new Bool(v);
 					break;
-				case AND_INOP:
-					if (t == ObjType::BOOL_OBJ) {
-						value = new Bool(*(bool*)lv && *(bool*)rv);
-					} else {
-						cerr << "[error] InfixExp::InfixExp(Expression* l, InfixOp o, Expression* r) { AND_INOP }" << endl;
-						exit(1);
-					}
+				case InfixOp::AND:
+					if (t == ObjType::BOOL) value = new Bool(*(bool*)lv && *(bool*)rv);
+					else inv = true;
 					break;
-				case OR_INOP:
-					if (t == ObjType::BOOL_OBJ) {
-						value = new Bool(*(bool*)lv || *(bool*)rv);
-					} else {
-						cerr << "[error] InfixExp::InfixExp(Expression* l, InfixOp o, Expression* r) { OR_INOP }" << endl;
-						exit(1);
-					}
+				case InfixOp::OR:
+					if (t == ObjType::BOOL) value = new Bool(*(bool*)lv || *(bool*)rv);
+					else inv = true;
 					break;
 				default:
 					cerr << "[error] InfixExp::InfixExp(Expression* l, InfixOp o, Expression* r) { default }" << endl;
 					exit(1);
 			}
-		} else {
-			cerr << "[error] InfixExp::InfixExp(Expression* l, InfixOp o, Expression* r)" << endl;
-			exit(1);
-		}
+			if (inv) value = new Error(UNSOP_ERR, left->value->str() + infix_str[op] + right->value->str());
+		} else value = new Error(TYPE_ERR, objtype_str[left->value->type] + infix_str[op] + objtype_str[right->value->type]);
 	}
 };
 

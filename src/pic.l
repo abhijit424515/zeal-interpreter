@@ -10,16 +10,18 @@ digit						[0-9]
 fraction					([0-9]*\.[0-9]+|[0-9]+\.[0-9]*)
 ws							[ \t\n]*
 letter						[a-zA-Z_]
-inline_comment				("//".*$)
+comment						("//".*) 
 
 %%
 
+comment						;
 let							{ return LET; }
 return						{ return RETURN; }
 true						{ return TRUE_VAL; }
 false						{ return FALSE_VAL; }
 if							{ return IF; }
 else						{ return ELSE; }
+null						{ return NULL_VAL; }
 
 =							{ return '='; }
 ;							{ return ';'; }
@@ -52,6 +54,5 @@ else						{ return ELSE; }
 {letter}({letter}|{digit})*	{ yylval.name = new string(yytext); return IDF; }
 \"[^\"\\]*\"				{ yylval.name = new string(yytext); return STR_VAL; /* ignoring escape chars for now */ } 
 
-inline_comment				;
 {ws}						;
 .							{ fprintf(stderr, "unknown_token: %d\n", yytext[0]); exit(1); }

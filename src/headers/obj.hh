@@ -3,15 +3,16 @@
 
 #include "base.hh"
 
-enum ObjType {
-	INT_OBJ,
-	FLT_OBJ,
-	STR_OBJ,
-	BOOL_OBJ,
-	NONE_OBJ,
-	FUNC_OBJ,
-	LIST_OBJ,
-	DICT_OBJ,
+enum class ObjType {
+	INT,
+	FLT,
+	STR,
+	BOOL,
+	NONE,
+	ERR,
+	FUNC,
+	LIST,
+	DICT,
 };
 
 struct Object {
@@ -29,7 +30,7 @@ static inline ostream& operator<<(ostream &out, const Object& obj) {
 
 struct Int : Object {
 	Int(int v = 0) {
-		type = ObjType::INT_OBJ;
+		type = ObjType::INT;
 		value = (void*)(new int(v));
 	}
 
@@ -42,7 +43,7 @@ struct Int : Object {
 
 struct Double : Object {
 	Double(double v = 0) {
-		type = ObjType::FLT_OBJ;
+		type = ObjType::FLT;
 		value = (void*)(new double(v));
 	}
 
@@ -55,7 +56,7 @@ struct Double : Object {
 
 struct String : Object {
 	String(const string& v = "") {
-		type = ObjType::STR_OBJ;
+		type = ObjType::STR;
 		value = (void*)(new string(v));
 	}
 
@@ -68,7 +69,7 @@ struct String : Object {
 
 struct Bool : Object {
 	Bool(bool v = false) {
-		type = ObjType::BOOL_OBJ;
+		type = ObjType::BOOL;
 		value = (void*)(new bool(v));
 	}
 
@@ -81,7 +82,7 @@ struct Bool : Object {
 
 struct None : Object {
 	None() {
-		type = ObjType::NONE_OBJ;
+		type = ObjType::NONE;
 		value = nullptr;
 	}
 
@@ -90,6 +91,34 @@ struct None : Object {
 	}
 
 	~None() {}
+};
+
+enum ErrorType {
+	UNDEF_ERR,
+	TYPE_ERR,
+	UNSOP_ERR,
+};
+
+struct Error : Object {
+	ErrorType err_type;
+
+	Error(ErrorType et, const string& v): err_type(et) {
+		type = ObjType::ERR;
+		value = (void*)(new string(v));
+	}
+
+	string str() const override {
+		string v = *(string*)value;
+		string s = "[error]";
+		switch (err_type) {
+			case UNDEF_ERR: s += "[undefined]: "; break;
+			case TYPE_ERR: s += "[type]: "; break;
+			case UNSOP_ERR: s += "[unsupported_operation]: "; break;
+		}
+		return s + v;
+	}
+
+	~Error() { delete (string*)value; }
 };
 
 #endif
