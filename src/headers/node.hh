@@ -103,8 +103,7 @@ struct Program: Node {
 			delete stmt;
 	}
 	void code() override {
-		for (auto stmt : stmt_list)
-			stmt->code();
+		for (auto stmt : stmt_list) stmt->code();
 	}
 };
 
@@ -118,7 +117,6 @@ struct LetStmt: Statement {
 	~LetStmt() { delete value; }
 	void code() override {
 		value->code();
-		cout << "[test] " << id << endl;
 		if (table.find(id) != table.end()) {
 			cerr << "[error] LetStmt::code()" << endl;
 			exit(1);
@@ -165,11 +163,11 @@ struct IfStmt: Statement {
 		delete els;
 	}
 	void code() override {
+		cond->code();
 		if (cond->value->type != ObjType::BOOL_OBJ) {
 			cerr << "[error] IfStmt::code()" << endl;
 			exit(1);
 		}
-		cond->code();
 		if (*(bool*)(cond->value->value)) then->code();
 		else els->code();
 	}
@@ -178,9 +176,7 @@ struct IfStmt: Statement {
 struct ExpStmt: Statement {
 	Expression* value;
 
-	ExpStmt(Expression* e): value(e) { 
-		stype = EXP_STMT;
-	}
+	ExpStmt(Expression* e): value(e) { stype = EXP_STMT; }
 	~ExpStmt() { delete value; }
 	void code() override {
 		value->code();
@@ -244,6 +240,7 @@ struct PrefixExp : Expression {
 	PrefixExp(PrefixOp o, Expression* r): op(o), right(r) { etype = PREFIX_EXP; }
 	~PrefixExp() { delete right; }
 	void code() override {
+		right->code();
 		switch (op) {
 			case NEG_PROP:
 				if (right->value->type == ObjType::INT_OBJ) {
@@ -279,6 +276,8 @@ struct InfixExp : Expression {
 		delete left, right;
 	}
 	void code() override {
+		left->code();
+		right->code();
 		void *lv = left->value->value, *rv = right->value->value;
 		if (left->value->type == right->value->type) {
 			ObjType t = left->value->type;
@@ -432,6 +431,9 @@ struct InfixExp : Expression {
 					cerr << "[error] InfixExp::InfixExp(Expression* l, InfixOp o, Expression* r) { default }" << endl;
 					exit(1);
 			}
+		} else {
+			cerr << "[error] InfixExp::InfixExp(Expression* l, InfixOp o, Expression* r)" << endl;
+			exit(1);
 		}
 	}
 };

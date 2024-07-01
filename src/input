@@ -1,1 +1,5 @@
-let s = 1+2*3;
+let a = 1;
+let t = true;
+let b = 2;
+
+if (t) a = 1*2; else b = 2*3;

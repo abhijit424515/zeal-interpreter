@@ -10,6 +10,7 @@ digit						[0-9]
 fraction					([0-9]*\.[0-9]+|[0-9]+\.[0-9]*)
 ws							[ \t\n]*
 letter						[a-zA-Z_]
+inline_comment				("//".*$)
 
 %%
 
@@ -51,5 +52,6 @@ else						{ return ELSE; }
 {letter}({letter}|{digit})*	{ yylval.name = new string(yytext); return IDF; }
 \"[^\"\\]*\"				{ yylval.name = new string(yytext); return STR_VAL; /* ignoring escape chars for now */ } 
 
+inline_comment				;
 {ws}						;
 .							{ fprintf(stderr, "unknown_token: %d\n", yytext[0]); exit(1); }
