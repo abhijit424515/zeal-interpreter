@@ -14,6 +14,7 @@ enum NodeType {
 
 enum StmtType {
 	LET_STMT,
+	ASG_STMT,
 	RETURN_STMT,
 	IF_STMT,
 	EXP_STMT,
@@ -59,24 +60,20 @@ string to_string(const InfixOp& op);
 
 struct Node {
 	NodeType ntype;
-	virtual string str() const = 0;
+	virtual void code() = 0;
 };
-
-static inline ostream& operator<<(ostream &out, const Node& n) {
-	return out << n.str();
-}
 
 // --------------------------------
 
 struct Statement: Node {
 	StmtType stype;
-	virtual string str() const = 0;
+	virtual void code() = 0;
 };
 
 struct Expression: Node {
 	ExpType etype;
 	Object* value;
-	virtual string str() const = 0;
+	virtual void code() = 0;
 };
 
 struct StmtWrapper {
@@ -105,11 +102,9 @@ struct Program: Node {
 		for (auto stmt : stmt_list)
 			delete stmt;
 	}
-	string str() const override {
-		string res;
+	void code() override {
 		for (auto stmt : stmt_list)
-			res += stmt->str() + "\n";
-		return res;
+			stmt->code();
 	}
 };
 
@@ -119,17 +114,32 @@ struct LetStmt: Statement {
 	string id;
 	Expression* value;
 
-	LetStmt(const string& n, Expression* e): id(n), value(e) { 
-		stype = LET_STMT;
-		if (table.find(n) != table.end()) {
-			cerr << "[error] LetStmt::LetStmt(const string& n, Expression* e)" << endl;
+	LetStmt(const string& n, Expression* e): id(n), value(e) { stype = LET_STMT; }
+	~LetStmt() { delete value; }
+	void code() override {
+		value->code();
+		cout << "[test] " << id << endl;
+		if (table.find(id) != table.end()) {
+			cerr << "[error] LetStmt::code()" << endl;
 			exit(1);
 		}
 		table[id] = value->value;
 	}
-	~LetStmt() { delete value; }
-	string str() const override {
-		return value->str();
+};
+
+struct AsgStmt: Statement {
+	string id;
+	Expression* value;
+
+	AsgStmt(const string& n, Expression* e): id(n), value(e) { stype = ASG_STMT; }
+	~AsgStmt() { delete value; }
+	void code() override {
+		value->code();
+		if (table.find(id) == table.end()) {
+			cerr << "[error] AsgStmt::code()" << endl;
+			exit(1);
+		}
+		table[id] = value->value;
 	}
 };
 
@@ -138,8 +148,8 @@ struct RetStmt: Statement {
 
 	RetStmt(Expression* e): value(e) { stype = RETURN_STMT; }
 	~RetStmt() { delete value; }
-	string str() const override {
-		return value->str();
+	void code() override {
+		value->code();
 	}
 };
 
@@ -154,11 +164,14 @@ struct IfStmt: Statement {
 		delete then;
 		delete els;
 	}
-	string str() const override {
-		string res = "if (" + cond->str() + ") {\n";
-		res += then->str() + "\n}";
-		if (els) res += " else {\n" + els->str() + "\n}";
-		return res;
+	void code() override {
+		if (cond->value->type != ObjType::BOOL_OBJ) {
+			cerr << "[error] IfStmt::code()" << endl;
+			exit(1);
+		}
+		cond->code();
+		if (*(bool*)(cond->value->value)) then->code();
+		else els->code();
 	}
 };
 
@@ -167,11 +180,11 @@ struct ExpStmt: Statement {
 
 	ExpStmt(Expression* e): value(e) { 
 		stype = EXP_STMT;
-		repl_print(str());
 	}
 	~ExpStmt() { delete value; }
-	string str() const override {
-		return value->str();
+	void code() override {
+		value->code();
+		repl_print(value->value->str());
 	}
 };
 
@@ -208,24 +221,19 @@ struct Const: Expression {
 				exit(1);
 		}
 	}
-	string str() const override {
-		return value->str();
-	}
+	void code() override {}
 };
 
 struct Idf : Expression {
 	string name;
 
-	Idf(const string& n): name(n) { 
-		etype = ID_EXP;
-		if (table.find(n) == table.end()) {
+	Idf(const string& n): name(n) { etype = ID_EXP; }
+	void code() override {
+		if (table.find(name) == table.end()) {
 			cerr << "[error] Idf::Idf(const string& n)" << endl;
 			exit(1);
 		}
-		value = table[n];
-	}
-	string str() const override {
-		return value->str();
+		value = table[name];
 	}
 };
 
@@ -233,34 +241,31 @@ struct PrefixExp : Expression {
 	PrefixOp op;
 	Expression* right;
 
-	PrefixExp(PrefixOp o, Expression* r): op(o), right(r) { 
-		etype = PREFIX_EXP;
+	PrefixExp(PrefixOp o, Expression* r): op(o), right(r) { etype = PREFIX_EXP; }
+	~PrefixExp() { delete right; }
+	void code() override {
 		switch (op) {
 			case NEG_PROP:
-				if (r->value->type == ObjType::INT_OBJ) {
-					value = new Int(-(*(int*)(r->value->value)));
-				} else if (r->value->type == ObjType::FLT_OBJ) {
-					value = new Double(-*(double*)(r->value->value));
+				if (right->value->type == ObjType::INT_OBJ) {
+					value = new Int(-(*(int*)(right->value->value)));
+				} else if (right->value->type == ObjType::FLT_OBJ) {
+					value = new Double(-*(double*)(right->value->value));
 				} else {
 					cerr << "[error] PrefixExp::PrefixExp(PrefixOp o, Expression* r) { NEG_PROP }" << endl;
 					exit(1);
 				}
 				break;
 			case NOT_PROP:
-				if (r->value->type != ObjType::BOOL_OBJ) {
+				if (right->value->type != ObjType::BOOL_OBJ) {
 					cerr << "[error] PrefixExp::PrefixExp(PrefixOp o, Expression* r) { NOT_PROP }" << endl;
 					exit(1);
 				}
-				value = new Bool(!*((bool*)r->value->value));
+				value = new Bool(!*((bool*)right->value->value));
 				break;
 			default:
 				cerr << "[error] PrefixExp::PrefixExp(PrefixOp o, Expression* r) { default }" << endl;
 				exit(1);
 		}
-	}
-	~PrefixExp() { delete right; }
-	string str() const override {
-		return value->str();
 	}
 };
 
@@ -269,13 +274,16 @@ struct InfixExp : Expression {
 	InfixOp op;
 	Expression* right;
 
-	InfixExp(Expression* l, InfixOp o, Expression* r): left(l), op(o), right(r) { 
-		etype = INFIX_EXP;
-		void *lv = l->value->value, *rv = r->value->value;
-		if (l->value->type == r->value->type) {
-			ObjType t = l->value->type;
+	InfixExp(Expression* l, InfixOp o, Expression* r): left(l), op(o), right(r) { etype = INFIX_EXP; }
+	~InfixExp() {
+		delete left, right;
+	}
+	void code() override {
+		void *lv = left->value->value, *rv = right->value->value;
+		if (left->value->type == right->value->type) {
+			ObjType t = left->value->type;
 			bool v = false;
-			switch (o) {
+			switch (op) {
 				case ADD_INOP:
 					if (t == ObjType::INT_OBJ) {
 						value = new Int(*(int*)lv + *(int*)rv);
@@ -425,13 +433,6 @@ struct InfixExp : Expression {
 					exit(1);
 			}
 		}
-	}
-
-	~InfixExp() {
-		delete left, right;
-	}
-	string str() const override {
-		return value->str();
 	}
 };
 

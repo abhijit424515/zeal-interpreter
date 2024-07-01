@@ -28,7 +28,7 @@
 
 %type <prog> program
 %type <stmt_wrap> stmt_list
-%type <st> stmt let_stmt ret_stmt if_stmt exp_stmt
+%type <st> stmt let_stmt asg_stmt ret_stmt if_stmt exp_stmt
 %type <exp> exp prefix_exp infix_exp
 %type <name> INT_VAL FLT_VAL IDF STR_VAL
 
@@ -46,26 +46,31 @@ stmt_list
 
 stmt
 	: let_stmt						{ $$ = $1; }
+	| asg_stmt						{ $$ = $1; }
 	| ret_stmt						{ $$ = $1; }
 	| if_stmt						{ $$ = $1; }
 	| exp_stmt						{ $$ = $1; }
 ;
 
 let_stmt
-	: LET IDF '=' exp ';'			{ $$ = new LetStmt(*($2), $4); }
+	: LET IDF '=' exp ';'			{ $$ = new LetStmt(*($2), $4); $$->code(); }
+;
+
+asg_stmt
+	: IDF '=' exp ';'				{ $$ = new AsgStmt(*($1), $3); $$->code(); }
 ;
 
 ret_stmt
-	: RETURN exp ';'				{ $$ = new RetStmt($2); }
+	: RETURN exp ';'				{ $$ = new RetStmt($2); $$->code(); }
 ;
 
 if_stmt
-	: IF '(' exp ')' stmt ELSE stmt	{ $$ = new IfStmt($3, $5, $7); }
-	| IF '(' exp ')' stmt %prec IFX	{ $$ = new IfStmt($3, $5, NULL); }
+	: IF '(' exp ')' stmt ELSE stmt	{ $$ = new IfStmt($3, $5, $7); $$->code(); }
+	| IF '(' exp ')' stmt %prec IFX	{ $$ = new IfStmt($3, $5, NULL); $$->code(); }
 ;
 
 exp_stmt
-	: exp ';'						{ $$ = new ExpStmt($1); }
+	: exp ';'						{ $$ = new ExpStmt($1); $$->code(); }
 ;
 
 exp
