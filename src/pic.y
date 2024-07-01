@@ -2,6 +2,7 @@
     #include "pic.cc"
     extern "C" void yyerror(const char *s);
     extern int yylex(void);
+	bool repl = false;
 %}
 
 %union{
@@ -35,7 +36,7 @@
 %%
 
 program
-	: stmt_list						{ $$ = new Program($1); cout << *($$) << endl; }
+	: stmt_list						{ $$ = new Program($1); }
 ;
 
 stmt_list
@@ -102,7 +103,21 @@ infix_exp
 
 %%
 
-int main() {
-	yyparse();
+static int parse_opt (int key, char *arg, struct argp_state *state);
+
+int main (int argc, char **argv) {
+	struct argp_option options[] = {
+		{ 0, 'i', 0, 0, "Interpret the input and print result"},
+		{ 0 }
+	};
+
+	struct argp argp = { options, parse_opt };
+	argp_parse (&argp, argc, argv, 0, 0, 0);
+	return yyparse();
+}
+
+
+static int parse_opt (int key, char *arg, struct argp_state *state) {
+	if (key == 'i') repl = true;
 	return 0;
 }
