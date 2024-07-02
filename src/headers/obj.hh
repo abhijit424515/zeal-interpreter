@@ -10,27 +10,23 @@ enum class ObjType {
 	BOOL,
 	NONE,
 	ERR,
-	FUNC,
+	FN,
 	LIST,
 	DICT,
 };
 
 struct Object {
 	void* value;
-	ObjType type;
+	ObjType otype;
 
 	virtual string str() const = 0;
 };
-
-static inline ostream& operator<<(ostream &out, const Object& obj) {
-	return out << obj.str();
-}
 
 // --------------------------------
 
 struct Int : Object {
 	Int(int v = 0) {
-		type = ObjType::INT;
+		otype = ObjType::INT;
 		value = (void*)(new int(v));
 	}
 
@@ -43,7 +39,7 @@ struct Int : Object {
 
 struct Double : Object {
 	Double(double v = 0) {
-		type = ObjType::FLT;
+		otype = ObjType::FLT;
 		value = (void*)(new double(v));
 	}
 
@@ -56,7 +52,7 @@ struct Double : Object {
 
 struct String : Object {
 	String(const string& v = "") {
-		type = ObjType::STR;
+		otype = ObjType::STR;
 		value = (void*)(new string(v));
 	}
 
@@ -69,7 +65,7 @@ struct String : Object {
 
 struct Bool : Object {
 	Bool(bool v = false) {
-		type = ObjType::BOOL;
+		otype = ObjType::BOOL;
 		value = (void*)(new bool(v));
 	}
 
@@ -80,30 +76,32 @@ struct Bool : Object {
 	~Bool() { delete (bool*)value; }
 };
 
-struct None : Object {
-	None() {
-		type = ObjType::NONE;
+struct Null : Object {
+	Null() {
+		otype = ObjType::NONE;
 		value = nullptr;
 	}
 
 	string str() const override {
-		return "None";
+		return "null";
 	}
 
-	~None() {}
+	~Null() {}
 };
 
-enum ErrorType {
-	UNDEF_ERR,
-	TYPE_ERR,
-	UNSOP_ERR,
+enum class ErrorType {
+	UNDEF,
+	REDECL,
+	TYPE,
+	UNSOP,
+	ARG,
 };
 
 struct Error : Object {
 	ErrorType err_type;
 
 	Error(ErrorType et, const string& v): err_type(et) {
-		type = ObjType::ERR;
+		otype = ObjType::ERR;
 		value = (void*)(new string(v));
 	}
 
@@ -111,14 +109,18 @@ struct Error : Object {
 		string v = *(string*)value;
 		string s = "[error]";
 		switch (err_type) {
-			case UNDEF_ERR: s += "[undefined]: "; break;
-			case TYPE_ERR: s += "[type]: "; break;
-			case UNSOP_ERR: s += "[unsupported_operation]: "; break;
+			case ErrorType::UNDEF: s += "[undefined]: "; break;
+			case ErrorType::REDECL: s += "[redeclaration]: "; break;
+			case ErrorType::TYPE: s += "[type]: "; break;
+			case ErrorType::UNSOP: s += "[unsupported_operation]: "; break;
 		}
 		return s + v;
 	}
 
 	~Error() { delete (string*)value; }
 };
+
+struct Fn;
+Object* dup(Object* obj);
 
 #endif

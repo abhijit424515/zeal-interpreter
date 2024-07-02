@@ -1,5 +1,24 @@
 let a = 1;
 let t = true;
-let b = 2;
+let b = 9;
 
-if (t) a = 1*2; else b = 2*3;
+if (t) {
+    a = a*2; 
+} else {
+    b = b*3;
+}
+
+a;
+b;
+
+let c = fn(x,y,z) {
+    let d = x + y;
+	d;
+    return d*3;
+};
+
+c(1,3,5);
+c(2,4,6);
+
+// a;
+// b;

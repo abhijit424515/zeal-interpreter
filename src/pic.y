@@ -11,9 +11,13 @@
 	Expression *exp;
 	Program *prog;
 	StmtWrapper *stmt_wrap;
+	BlockStmt *block;
+	Call *call;
+	ArgWrapper *arg;
+	ExpWrapper *exp_wrap;
 }
 
-%token LET RETURN TRUE_VAL FALSE_VAL IF ELSE EQ NE LE GE AND OR INT_VAL FLT_VAL IDF STR_VAL NULL_VAL
+%token LET RETURN TRUE_VAL FALSE_VAL IF ELSE EQ NE LE GE AND OR INT_VAL FLT_VAL IDF STR_VAL NULL_VAL FN
 
 %left OR
 %left AND
@@ -29,19 +33,45 @@
 %type <prog> program
 %type <stmt_wrap> stmt_list
 %type <st> stmt let_stmt asg_stmt ret_stmt if_stmt exp_stmt
-%type <exp> exp prefix_exp infix_exp
+%type <exp> exp prefix_exp infix_exp fn
 %type <name> INT_VAL FLT_VAL IDF STR_VAL
+%type <block> block_stmt
+%type <arg> arg_list
+%type <call> call
+%type <exp_wrap> exp_list
 
 %start program
 %%
 
 program
-	: stmt_list							{ $$ = new Program($1); }
+	: stmt_list							{ $$ = new Program($1); $$->code(); }
 ;
 
 stmt_list
 	: stmt_list stmt					{ $1->push_back($2); $$ = $1; }
 	| stmt								{ $$ = new StmtWrapper($1); }
+;
+
+block_stmt
+	: '{' stmt_list '}'					{ $$ = new BlockStmt($2); }
+;
+
+fn
+	: FN '(' arg_list ')' block_stmt	{ $$ = new Const($3, $5); }
+;
+
+call
+	: IDF '(' exp_list ')'				{ $$ = new Call(*($1), $3); }
+;
+
+exp_list
+	: exp_list ',' exp					{ $1->push_back($3); $$ = $1; }
+	| exp								{ $$ = new ExpWrapper($1); }
+;
+
+arg_list
+	: arg_list ',' IDF					{ $1->push_back($3); $$ = $1; }
+	| IDF								{ $$ = new ArgWrapper($1); }
 ;
 
 stmt
@@ -53,30 +83,32 @@ stmt
 ;
 
 let_stmt
-	: LET IDF '=' exp ';'				{ $$ = new LetStmt(*($2), $4); $$->code(); }
+	: LET IDF '=' exp ';'				{ $$ = new LetStmt(*($2), $4); }
 ;
 
 asg_stmt
-	: IDF '=' exp ';'					{ $$ = new AsgStmt(*($1), $3); $$->code(); }
+	: IDF '=' exp ';'					{ $$ = new AsgStmt(*($1), $3); }
 ;
 
 ret_stmt
-	: RETURN exp ';'					{ $$ = new RetStmt($2); $$->code(); }
+	: RETURN exp ';'					{ $$ = new RetStmt($2); }
 ;
 
 if_stmt
-	: IF '(' exp ')' stmt ELSE stmt	{ $$ = new IfStmt($3, $5, $7); $$->code(); }
-	| IF '(' exp ')' stmt %prec IFX	{ $$ = new IfStmt($3, $5, NULL); $$->code(); }
+	: IF '(' exp ')' block_stmt ELSE block_stmt		{ $$ = new IfStmt($3, $5, $7); }
+	| IF '(' exp ')' block_stmt %prec IFX			{ $$ = new IfStmt($3, $5, NULL); }
 ;
 
 exp_stmt
-	: exp ';'							{ $$ = new ExpStmt($1); $$->code(); }
+	: exp ';'							{ $$ = new ExpStmt($1); }
 ;
 
 exp
 	: prefix_exp						{ $$ = $1; }
 	| infix_exp							{ $$ = $1; }
 	| '(' exp ')'						{ $$ = $2; }
+	| fn								{ $$ = $1; }
+	| call								{ $$ = $1; }
 	| IDF								{ $$ = new Idf(*($1)); }
 	| INT_VAL							{ $$ = new Const(*($1), ConstType::INT); }
 	| FLT_VAL							{ $$ = new Const(*($1), ConstType::FLT); }

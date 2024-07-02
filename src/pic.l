@@ -14,7 +14,7 @@ comment						("//".*)
 
 %%
 
-comment						;
+{comment}					;
 let							{ return LET; }
 return						{ return RETURN; }
 true						{ return TRUE_VAL; }
@@ -22,6 +22,7 @@ false						{ return FALSE_VAL; }
 if							{ return IF; }
 else						{ return ELSE; }
 null						{ return NULL_VAL; }
+fn							{ return FN; }
 
 =							{ return '='; }
 ;							{ return ';'; }
