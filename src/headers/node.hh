@@ -68,7 +68,6 @@ enum class InfixOp {
 
 struct Node {
 	NodeType ntype;
-	virtual void code() = 0;
 };
 
 // --------------------------------
@@ -80,8 +79,7 @@ struct Statement: Node {
 
 struct Expression: Node {
 	ExpType etype;
-	Object* value;
-	virtual void code() = 0;
+	virtual unique_ptr<Object> code() = 0;
 };
 
 struct StmtWrapper {
@@ -136,7 +134,7 @@ struct BlockStmt: Node {
 
 	BlockStmt(StmtWrapper *s): stmt_list(s) { ntype = NodeType::BLOCK; }
 	~BlockStmt() { delete stmt_list; }
-	void code() override {
+	void code() { // [TODO] may need some changes
 		for (auto stmt : stmt_list->stmts) stmt->code();
 	}
 };
@@ -147,7 +145,7 @@ struct Program: Node {
 	Program() { ntype = NodeType::PROG; }
 	Program(StmtWrapper *s): stmt_list(s) { ntype = NodeType::PROG; }
 	~Program() { delete stmt_list; }
-	void code() override {
+	void code() { // [TODO] may need some changes
 		for (auto stmt : stmt_list->stmts) stmt->code();
 	}
 };
@@ -173,33 +171,33 @@ struct Fn: Object {
 
 struct LetStmt: Statement {
 	string id;
-	Expression* value;
+	Expression* rhs;
 
-	LetStmt(const string& n, Expression* e): id(n), value(e) { stype = StmtType::LET; }
-	~LetStmt() { delete value; }
+	LetStmt(const string& n, Expression* e): id(n), rhs(e) { stype = StmtType::LET; }
+	~LetStmt() { delete rhs; }
 	void code() override {
-		value->code();
+		unique_ptr<Object> v = move(rhs->code());
 		if (env_stack->redeclaration(id)) {
-			value->value = new Error(ErrorType::REDECL, id);
+			v = make_unique<Error>(ErrorType::REDECL, id);
 			return;
 		}
-		env_stack->create(id, value->value);
+		env_stack->insert(id, move(v));
 	}
 };
 
 struct AsgStmt: Statement {
 	string id;
-	Expression* value;
+	Expression* rhs;
 
-	AsgStmt(const string& n, Expression* e): id(n), value(e) { stype = StmtType::ASG; }
-	~AsgStmt() { delete value; }
+	AsgStmt(const string& n, Expression* e): id(n), rhs(e) { stype = StmtType::ASG; }
+	~AsgStmt() { delete rhs; }
 	void code() override {
-		value->code();
+		unique_ptr<Object> v = move(rhs->code());
 		if (env_stack->undefined(id)) {
-			value->value = new Error(ErrorType::UNDEF, id);
+			v = make_unique<Error>(ErrorType::UNDEF, id);
 			return;
 		}
-		env_stack->modify(id) = value->value;
+		env_stack->insert(id, move(v));
 	}
 };
 
@@ -209,8 +207,8 @@ struct RetStmt: Statement {
 	RetStmt(Expression* e): value(e) { stype = StmtType::RETURN; }
 	~RetStmt() { delete value; }
 	void code() override {
-		value->code();
-		env_stack->modify("return") = dup(value->value);
+		unique_ptr<Object> v = move(value->code());
+		env_stack->insert("return", move(v));
 	}
 };
 
@@ -226,13 +224,14 @@ struct IfStmt: Statement {
 		delete els;
 	}
 	void code() override {
-		cond->code();
-		if (cond->value->otype != ObjType::BOOL) {
-			cond->value = new Error(ErrorType::TYPE, "if condition must be a boolean");
+		unique_ptr<Object> v = move(cond->code());
+		if (v->otype != ObjType::BOOL) {
+			v = make_unique<Error>(ErrorType::TYPE, "if condition must be a boolean");
 			return;
+		} else { // [TODO] how to propagate error object ?
+			if (*(bool*)(v->value)) then->code();
+			else els->code();
 		}
-		if (*(bool*)(cond->value->value)) then->code();
-		else els->code();
 	}
 };
 
@@ -242,8 +241,8 @@ struct ExpStmt: Statement {
 	ExpStmt(Expression* e): value(e) { stype = StmtType::EXP; }
 	~ExpStmt() { delete value; }
 	void code() override {
-		value->code();
-		repl_print(value->value->str());
+		unique_ptr<Object> v = move(value->code());
+		repl_print(v->str());
 	}
 };
 
@@ -252,71 +251,61 @@ struct ExpStmt: Statement {
 struct Call: Expression {
 	string id;
 	ExpWrapper* args;
-	Scope* call_scope;
 
 	Call(const string& n, ExpWrapper* a): id(n), args(a) { etype = ExpType::CALL; }
 	~Call() { delete args; }
-	void code() override {
-		if (env_stack->undefined(id)) {
-			value = new Error(ErrorType::UNDEF, id);
-			return;
-		}
-		Object* obj = env_stack->modify(id);
-		if (obj->otype != ObjType::FN) {
-			value = new Error(ErrorType::TYPE, id);
-			return;
-		}
-		Fn* fn = (Fn*)obj;
+	unique_ptr<Object> code() override {
+		unique_ptr<Object> value;
 
-		// check for argument count
-		if (fn->params->args.size() != args->exps.size()) {
-			value = new Error(ErrorType::ARG, id + " expects " + to_string(fn->params->args.size()) + " arguments");
-			return;
-		}
+		if (env_stack->undefined(id))
+			return make_unique<Error>(ErrorType::UNDEF, id);
 
-		// create a new scope and push it to the env stack
-		call_scope = new Scope();
-		env_stack->stack.push_back(call_scope);
+		unique_ptr<Object> obj = env_stack->get(id);
+		if (obj->otype != ObjType::FN)
+			return make_unique<Error>(ErrorType::TYPE, id);
+
+		unique_ptr<Fn> fn = static_unique_ptr_cast<Fn>(move(obj));
+		if (fn->params->args.size() != args->exps.size())
+			return make_unique<Error>(ErrorType::ARG, id + " expects " + to_string(fn->params->args.size()) + " arguments");
+
+		// create a new scope for the function call
+		env_stack->push_scope();
 
 		// bind the return value to the local scope
-		value = new Null();
-		env_stack->create("return", value);
+		value = make_unique<Null>();
+		env_stack->insert("return", move(value));
 
 		// evaluate the arg expressions, then bind them to the local scope 
 		for (int i = 0; i < args->exps.size(); i++) {
-			args->exps[i]->code();
 			string name = *(fn->params->args[i]);
+			if (env_stack->redeclaration(name))
+				return make_unique<Error>(ErrorType::REDECL, name);
 
-			if (env_stack->redeclaration(name)) {
-				value = new Error(ErrorType::REDECL, name);
-				return;
-			}
-
-			// copy the value object, and bind it to the local scope
-			call_scope->insert({name, dup(args->exps[i]->value)});
+			unique_ptr<Object> v = move(args->exps[i]->code());
+			env_stack->insert(name, move(v));
 		}
 
 		// execute the function body 
 		for (int i = 0; i < fn->body->stmt_list->stmts.size(); i++)
 			fn->body->stmt_list->stmts[i]->code();
 
-		// retrieve return value from the local scope, and duplicate it
-		value = dup(env_stack->modify("return"));
-
-		// pop the scope from the env stack
-		env_stack->pop();
+		// retrieve return value from the local scope before popping it
+		value = env_stack->get("return");
+		env_stack->pop_scope();
+		return move(value);
 	}
 };
 
 struct Const: Expression {
 	ConstType ctype;
+	unique_ptr<Object> cv;
 
 	Const(string v, ConstType t): ctype(t) {
 		etype = ExpType::CONST;
 		switch (t) {
-			case ConstType::INT: value = new Int(stoi(v)); break;
-			case ConstType::FLT: value = new Double(stof(v)); break;
-			case ConstType::STR: value = new String(v); break;
+			case ConstType::INT: cv = make_unique<Int>(stoi(v)); break;
+			case ConstType::FLT: cv = make_unique<Double>(stof(v)); break;
+			case ConstType::STR: cv = make_unique<String>(v); break;
 			default: 
 				cerr << "[error] Const::Const(string v, ConstType t)" << endl;
 				exit(1);
@@ -324,40 +313,34 @@ struct Const: Expression {
 	}
 	Const(): ctype(ConstType::NONE) {
 		etype = ExpType::CONST;
-		value = new Null();
+		cv = make_unique<Null>();
 	}
 	Const(bool v): ctype(ConstType::BOOL) {
 		etype = ExpType::CONST;
-		value = new Bool(v);
+		cv = make_unique<Bool>(v);
 	}
 	Const(ArgWrapper* p, BlockStmt* b): ctype(ConstType::FN) {
 		etype = ExpType::CONST;
-		value = new Fn(p, b);
+		cv = make_unique<Fn>(p, b);
 	}
-	~Const() {
-		switch (ctype) {
-			case ConstType::INT: delete (Int*)value; break;
-			case ConstType::FLT: delete (Double*)value; break;
-			case ConstType::STR: delete (String*)value; break;
-			case ConstType::BOOL: delete (Bool*)value; break;
-			case ConstType::NONE: delete (Null*)value; break;
-			case ConstType::FN: delete (Fn*)value; break;
-			default: 
-				cerr << "[error] Const::~Const()" << endl;
-				exit(1);
-		}
+	unique_ptr<Object> code() override {
+		return move(obj_clone(cv.get()));
 	}
-	void code() override {}
 };
 
 struct Idf : Expression {
 	string name;
 
 	Idf(const string& n): name(n) { etype = ExpType::ID; }
-	void code() override {
-		if (env_stack->undefined(name)) 
-			value = new Error(ErrorType::UNDEF, name);
-		else value = env_stack->modify(name);
+	unique_ptr<Object> code() override {
+		if (env_stack->undefined(name))
+			return make_unique<Error>(ErrorType::UNDEF, name);
+		else {
+			unique_ptr<Object> v = env_stack->get(name);
+			unique_ptr<Object> v_ = move(obj_clone(v.get()));
+			env_stack->insert(name, move(v));
+			return move(v_);
+		}
 	}
 };
 
@@ -367,22 +350,22 @@ struct PrefixExp : Expression {
 
 	PrefixExp(PrefixOp o, Expression* r): op(o), right(r) { etype = ExpType::PREFIX; }
 	~PrefixExp() { delete right; }
-	void code() override {
-		right->code();
+	unique_ptr<Object> code() override {
+		unique_ptr<Object> rv = move(right->code());
 		switch (op) {
 			case PrefixOp::NEG:
-				if (right->value->otype == ObjType::INT)
-					value = new Int(-(*(int*)(right->value->value)));
-				else if (right->value->otype == ObjType::FLT)
-					value = new Double(-*(double*)(right->value->value));
+				if (rv->otype == ObjType::INT)
+					return make_unique<Int>(- obj_vcast<int>(rv.get()));
+				else if (rv->otype == ObjType::FLT)
+					return make_unique<Double>(- obj_vcast<double>(rv.get()));
 				else
-					value = new Error(ErrorType::UNSOP, prefix_str[op] + right->value->str());
+					return make_unique<Error>(ErrorType::UNSOP, prefix_str[op] + rv->str());
 				break;
 			case PrefixOp::NOT:
-				if (right->value->otype != ObjType::BOOL)
-					value = new Error(ErrorType::UNSOP, prefix_str[op] + right->value->str());
-				else 
-					value = new Bool(!*((bool*)right->value->value));
+				if (rv->otype != ObjType::BOOL)
+					return make_unique<Error>(ErrorType::UNSOP, prefix_str[op] + rv->str());
+				else
+					return make_unique<Bool>(! obj_vcast<bool>(rv.get()));
 				break;
 			default:
 				cerr << "[error] PrefixExp::PrefixExp(PrefixOp o, Expression* r)" << endl;
@@ -398,102 +381,122 @@ struct InfixExp : Expression {
 
 	InfixExp(Expression* l, InfixOp o, Expression* r): left(l), op(o), right(r) { etype = ExpType::INFIX; }
 	~InfixExp() { delete left, right; }
-	void code() override {
-		left->code();
-		right->code();
-		void *lv = left->value->value, *rv = right->value->value;
-		if (left->value->otype == right->value->otype) {
-			ObjType t = left->value->otype;
-			bool v = false;
-			bool inv = false;
+	unique_ptr<Object> code() override {
+		unique_ptr<Object> lv = move(left->code());
+		unique_ptr<Object> rv = move(right->code());
 
-			switch (op) {
-				case InfixOp::ADD:
-					if (t == ObjType::INT) value = new Int(*(int*)lv + *(int*)rv);
-					else if (t == ObjType::FLT) value = new Double(*(double*)lv + *(double*)rv);
-					else if (t == ObjType::STR) value = new String(*(string*)lv + *(string*)rv);
-					else inv = true;
-					break;
-				case InfixOp::SUB:
-					if (t == ObjType::INT) value = new Int(*(int*)lv - *(int*)rv);
-					else if (t == ObjType::FLT) value = new Double(*(double*)lv - *(double*)rv);
-					else inv = true;
-					break;
-				case InfixOp::MUL:
-					if (t == ObjType::INT) value = new Int(*(int*)lv * *(int*)rv);
-					else if (t == ObjType::FLT) value = new Double(*(double*)lv * *(double*)rv);
-					else inv = true;
-					break;
-				case InfixOp::DIV:
-					if (t == ObjType::INT) value = new Int(*(int*)lv / *(int*)rv);
-					else if (t == ObjType::FLT) value = new Double(*(double*)lv / *(double*)rv);
-					else inv = true;
-					break;
-				case InfixOp::MOD:
-					if (t == ObjType::INT) value = new Int(*(int*)lv % *(int*)rv);
-					else inv = true;
-					break;
-				case InfixOp::EQ:
-					if (t == ObjType::INT) v = *(int*)lv == *(int*)rv;
-					else if (t == ObjType::FLT) v = *(double*)lv == *(double*)rv;
-					else if (t == ObjType::STR) v = *(string*)lv == *(string*)rv;
-					else if (t == ObjType::BOOL) v = *(bool*)lv == *(bool*)rv;
-					else if (t == ObjType::NONE) v = true;
-					else inv = true;
-					if (!inv) value = new Bool(v);
-					break;
-				case InfixOp::NE:
-					if (t == ObjType::INT) v = *(int*)lv != *(int*)rv;
-					else if (t == ObjType::FLT) v = *(double*)lv != *(double*)rv;
-					else if (t == ObjType::STR) v = *(string*)lv != *(string*)rv;
-					else if (t == ObjType::BOOL) v = *(bool*)lv != *(bool*)rv;
-					else if (t == ObjType::NONE) v = false;
-					else inv = true;
+		if (lv->otype != rv->otype)
+			return make_unique<Error>(ErrorType::TYPE, lv->str() + infix_str[op] + rv->str());
+		
+		ObjType t = lv->otype;
+		bool v = false;
+		bool inv = false;
 
-					if (!inv) value = new Bool(v);
-					break;
-				case InfixOp::LT:
-					if (t == ObjType::INT) v = *(int*)lv < *(int*)rv;
-					else if (t == ObjType::FLT) v = *(double*)lv < *(double*)rv;
-					else inv = true;
-				
-					if (!inv) value = new Bool(v);
-					break;
-				case InfixOp::LE:
-					if (t == ObjType::INT) v = *(int*)lv <= *(int*)rv;
-					else if (t == ObjType::FLT) v = *(double*)lv <= *(double*)rv;
-					else inv = true;
+		switch (op) {
+			case InfixOp::ADD:
+				switch (t) {
+					case ObjType::INT: return make_unique<Int>(obj_vcast<int>(lv.get()) + obj_vcast<int>(rv.get()));
+					case ObjType::FLT: return make_unique<Double>(obj_vcast<double>(lv.get()) + obj_vcast<double>(rv.get()));
+					case ObjType::STR: return make_unique<String>(obj_vcast<string>(lv.get()) + obj_vcast<string>(rv.get()));
+					default: inv = true;
+				}
+				break;
+			case InfixOp::SUB:
+				switch (t) {
+					case ObjType::INT: return make_unique<Int>(obj_vcast<int>(lv.get()) - obj_vcast<int>(rv.get()));
+					case ObjType::FLT: return make_unique<Double>(obj_vcast<double>(lv.get()) - obj_vcast<double>(rv.get()));
+					default: inv = true;
+				}
+				break;
+			case InfixOp::MUL:
+				switch (t) {
+					case ObjType::INT: return make_unique<Int>(obj_vcast<int>(lv.get()) * obj_vcast<int>(rv.get()));
+					case ObjType::FLT: return make_unique<Double>(obj_vcast<double>(lv.get()) * obj_vcast<double>(rv.get()));
+					default: inv = true;
+				}
+				break;
+			case InfixOp::DIV:
+				switch (t) {
+					case ObjType::INT: return make_unique<Int>(obj_vcast<int>(lv.get()) / obj_vcast<int>(rv.get()));
+					case ObjType::FLT: return make_unique<Double>(obj_vcast<double>(lv.get()) / obj_vcast<double>(rv.get()));
+					default: inv = true;
+				}
+				break;
+			case InfixOp::MOD:
+				switch (t) {
+					case ObjType::INT: return make_unique<Int>(obj_vcast<int>(lv.get()) % obj_vcast<int>(rv.get()));
+					default: inv = true;
+				}
+				break;
+			case InfixOp::EQ:
+				switch (t) {
+					case ObjType::INT: v = obj_vcast<int>(lv.get()) == obj_vcast<int>(rv.get()); break;
+					case ObjType::FLT: v = obj_vcast<double>(lv.get()) == obj_vcast<double>(rv.get()); break;
+					case ObjType::STR: v = obj_vcast<string>(lv.get()) == obj_vcast<string>(rv.get()); break;
+					case ObjType::BOOL: v = obj_vcast<bool>(lv.get()) == obj_vcast<bool>(rv.get()); break;
+					case ObjType::NONE: v = true; break;
+					default: inv = true;
+				}
+				if (!inv) return make_unique<Bool>(v);
+				break;
+			case InfixOp::NE:
+				switch (t) {
+					case ObjType::INT: v = obj_vcast<int>(lv.get()) != obj_vcast<int>(rv.get()); break;
+					case ObjType::FLT: v = obj_vcast<double>(lv.get()) != obj_vcast<double>(rv.get()); break;
+					case ObjType::STR: v = obj_vcast<string>(lv.get()) != obj_vcast<string>(rv.get()); break;
+					case ObjType::BOOL: v = obj_vcast<bool>(lv.get()) != obj_vcast<bool>(rv.get()); break;
+					case ObjType::NONE: v = false; break;
+					default: inv = true;
+				}
+				if (!inv) return make_unique<Bool>(v);
+				break;
+			case InfixOp::LT:
+				switch (t) {
+					case ObjType::INT: v = obj_vcast<int>(lv.get()) < obj_vcast<int>(rv.get()); break;
+					case ObjType::FLT: v = obj_vcast<double>(lv.get()) < obj_vcast<double>(rv.get()); break;
+					default: inv = true;
+				}
+				if (!inv) return make_unique<Bool>(v);
+				break;
+			case InfixOp::LE:
+				switch (t) {
+					case ObjType::INT: v = obj_vcast<int>(lv.get()) <= obj_vcast<int>(rv.get()); break;
+					case ObjType::FLT: v = obj_vcast<double>(lv.get()) <= obj_vcast<double>(rv.get()); break;
+					default: inv = true;
+				}
+				if (!inv) return make_unique<Bool>(v);
+				break;
+			case InfixOp::GT:
+				switch (t) {
+					case ObjType::INT: v = obj_vcast<int>(lv.get()) > obj_vcast<int>(rv.get()); break;
+					case ObjType::FLT: v = obj_vcast<double>(lv.get()) > obj_vcast<double>(rv.get()); break;
+					default: inv = true;
+				}
+				if (!inv) return make_unique<Bool>(v);
+				break;
+			case InfixOp::GE:
+				switch (t) {
+					case ObjType::INT: v = obj_vcast<int>(lv.get()) >= obj_vcast<int>(rv.get()); break;
+					case ObjType::FLT: v = obj_vcast<double>(lv.get()) >= obj_vcast<double>(rv.get()); break;
+					default: inv = true;
+				}
+				if (!inv) return make_unique<Bool>(v);
+				break;
+			case InfixOp::AND:
+				if (t == ObjType::BOOL) return make_unique<Bool>(obj_vcast<bool>(lv.get()) && obj_vcast<bool>(rv.get()));
+				else inv = true;
+				break;
+			case InfixOp::OR:
+				if (t == ObjType::BOOL) return make_unique<Bool>(obj_vcast<bool>(lv.get()) || obj_vcast<bool>(rv.get()));
+				else inv = true;
+				break;
+			default:
+				cerr << "[error] InfixExp::InfixExp(Expression* l, InfixOp o, Expression* r) { default }" << endl;
+				exit(1);
+		}
 
-					if (!inv) value = new Bool(v);
-					break;
-				case InfixOp::GT:
-					if (t == ObjType::INT) v = *(int*)lv > *(int*)rv;
-					else if (t == ObjType::FLT) v = *(double*)lv > *(double*)rv;
-					else inv = true;
-
-					if (!inv) value = new Bool(v);
-					break;
-				case InfixOp::GE:
-					if (t == ObjType::INT) v = *(int*)lv >= *(int*)rv;
-					else if (t == ObjType::FLT)	v = *(double*)lv >= *(double*)rv;
-					else inv = true;
-
-					if (!inv) value = new Bool(v);
-					break;
-				case InfixOp::AND:
-					if (t == ObjType::BOOL) value = new Bool(*(bool*)lv && *(bool*)rv);
-					else inv = true;
-					break;
-				case InfixOp::OR:
-					if (t == ObjType::BOOL) value = new Bool(*(bool*)lv || *(bool*)rv);
-					else inv = true;
-					break;
-				default:
-					cerr << "[error] InfixExp::InfixExp(Expression* l, InfixOp o, Expression* r) { default }" << endl;
-					exit(1);
-			}
-			if (inv) value = new Error(ErrorType::UNSOP, left->value->str() + infix_str[op] + right->value->str());
-		} else value = new Error(ErrorType::TYPE, objtype_str[left->value->otype] + infix_str[op] + objtype_str[right->value->otype]);
+		if (inv) return make_unique<Error>(ErrorType::UNSOP, lv->str() + infix_str[op] + rv->str());
+		return make_unique<Error>(ErrorType::UNK, "InfixExp::code()");
 	}
 };
 

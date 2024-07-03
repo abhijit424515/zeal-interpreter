@@ -13,16 +13,16 @@ OBJ = scan.o parse.tab.o
 CFLAGS = -g
 
 $(TGT): $(OBJ)
-	$(CPP) --std=c++0x  $(OBJ) -o $(TGT) -ly 
+	$(CPP) --std=c++14  $(OBJ) -o $(TGT) -ly 
 
 scan.o: scan.c $(HEADERS)
-	$(CPP) --std=c++0x  $(CFLAGS) -c $<
+	$(CPP) --std=c++14  $(CFLAGS) -c $<
 
 parse.tab.o:parse.tab.c $(HEADERS)
-	$(CPP) --std=c++0x  $(CFLAGS) -c  $<
+	$(CPP) --std=c++14  $(CFLAGS) -c  $<
 
 %.o: %.cc $(HEADERS)
-	$(CPP) --std=c++0x  $(CFLAGS) -c $<
+	$(CPP) --std=c++14  $(CFLAGS) -c $<
 
 scan.c : $(SCAN) parse.tab.h
 	$(FLEX) -l --yylineno -o scan.c $(SCAN)

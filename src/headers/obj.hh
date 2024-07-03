@@ -22,6 +22,11 @@ struct Object {
 	virtual string str() const = 0;
 };
 
+template<typename T>
+static T obj_vcast(Object *v) { return *(T*)(void*)(v->value); }
+
+unique_ptr<Object> obj_clone(Object* obj);
+
 // --------------------------------
 
 struct Int : Object {
@@ -95,6 +100,7 @@ enum class ErrorType {
 	TYPE,
 	UNSOP,
 	ARG,
+	UNK,
 };
 
 struct Error : Object {
@@ -113,6 +119,8 @@ struct Error : Object {
 			case ErrorType::REDECL: s += "[redeclaration]: "; break;
 			case ErrorType::TYPE: s += "[type]: "; break;
 			case ErrorType::UNSOP: s += "[unsupported_operation]: "; break;
+			case ErrorType::ARG: s += "[arg]: "; break;
+			case ErrorType::UNK: s += "[unknown]: "; break;
 		}
 		return s + v;
 	}

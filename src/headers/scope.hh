@@ -4,32 +4,28 @@
 #include "obj.hh"
 
 struct Scope {
-	unordered_map<string,Object*> scope;
+	unordered_map<string,unique_ptr<Object>> scope;
 
-	Object*& operator[](const string& name) {
+	unique_ptr<Object>& operator[](const string& name) {
 		return scope[name];
 	}
-	Object*& find(const string& name) {
-		if (scope.find(name) != scope.end()) return scope[name];
-		cerr << "[error] Object* find(const string& name): " << name << " not found\n";
-		exit(1);
-	}
-	void insert(const pair<string,Object*>& p) {
-		scope.insert(p);
-	}
-	~Scope() {
-		for (auto x: scope) delete x.second;
-	}
+	std::unique_ptr<Object>& find(const std::string& name) {
+        auto it = scope.find(name);
+        if (it != scope.end()) {
+            return it->second;
+        }
+        std::cerr << "[error] std::unique_ptr<Object>& find(const std::string& name): " << name << " not found\n";
+        exit(1);
+    }
+	void insert(const std::string& name, std::unique_ptr<Object> obj) {
+        scope[name] = std::move(obj);
+    }
 };
 
 struct EnvStack {
-	vector<Scope*> stack;
-	Scope* global_env;
+	std::vector<std::unique_ptr<Scope>> stack;
 
-	EnvStack() {
-		global_env = new Scope();
-		stack.push_back(global_env);
-	}
+	EnvStack() { stack.push_back(std::make_unique<Scope>()); }
 
 	bool undefined(const string& name) {
 		for (auto it = stack.rbegin(); it != stack.rend(); ++it)
@@ -40,28 +36,26 @@ struct EnvStack {
 		if (stack.back()->scope.find(name) != stack.back()->scope.end()) return true;
 		return false;
 	}
-	void create(const string& k, Object* v) {
-		stack.back()->insert({k,v});
-	}
-	Object*& modify(const string& name) {
+	std::unique_ptr<Object> get(const std::string& name) {
 		for (auto it = stack.rbegin(); it != stack.rend(); ++it)
 			if ((*it)->scope.find(name) != (*it)->scope.end()) 
-				return (*it)->scope.find(name)->second;
+				return std::move((*it)->scope.find(name)->second);
 				
-		cerr << "[error] Object* find(const string& name): " << name << " not found\n";
+		std::cerr << "[error] std::unique_ptr<Object> get(const std::string& name): " << name << " not found\n";
 		exit(1);
 	}
-	void pop() {
+	void insert(const std::string& k, std::unique_ptr<Object> v) {
+        stack.back()->insert(k, std::move(v));
+    }
+	void push_scope() {
+		stack.push_back(std::make_unique<Scope>());
+	}
+	void pop_scope() {
 		if (stack.size() == 1) {
 			cerr << "[error] void pop(): cannot pop global scope\n";
 			exit(1);
 		}
-		delete stack.back();
 		stack.pop_back();
-	}
-
-	~EnvStack() {
-		for (auto& env : stack) delete env;
 	}
 };
 

@@ -1,24 +1,9 @@
-let a = 1;
-let t = true;
-let b = 9;
-
-if (t) {
-    a = a*2; 
-} else {
-    b = b*3;
-}
-
-a;
-b;
-
-let c = fn(x,y,z) {
-    let d = x + y;
-	d;
-    return d*3;
+let fib = fn(x) {
+    if (x > 2) {
+        return fib(x-1) + fib(x-2);
+    } else {
+        return 1;
+    }
 };
 
-c(1,3,5);
-c(2,4,6);
-
-// a;
-// b;
+fib(5);

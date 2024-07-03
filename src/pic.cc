@@ -44,17 +44,17 @@ void repl_print(const string& s) {
 	cout << ">> " << s << endl;
 }
 
-Object* dup(Object* obj) {
+unique_ptr<Object> obj_clone(Object* obj) {
 	switch (obj->otype) {
-		case ObjType::INT: return new Int(*(int*)obj->value);
-		case ObjType::FLT: return new Double(*(double*)obj->value);
-		case ObjType::STR: return new String(*(string*)obj->value);
-		case ObjType::BOOL: return new Bool(*(bool*)obj->value);
-		case ObjType::NONE: return new Null();
-		case ObjType::ERR: return new Error(((Error*)obj)->err_type, *(string*)obj->value);
-		case ObjType::FN: return new Fn(((Fn*)obj)->params, ((Fn*)obj)->body);
+		case ObjType::INT: return move(make_unique<Int>(obj_vcast<int>(obj)));
+		case ObjType::FLT: return move(make_unique<Double>(obj_vcast<double>(obj)));
+		case ObjType::STR: return move(make_unique<String>(obj_vcast<string>(obj)));
+		case ObjType::BOOL: return move(make_unique<Bool>(obj_vcast<bool>(obj)));
+		case ObjType::NONE: return move(make_unique<Null>());
+		case ObjType::ERR: return move(make_unique<Error>(((Error*)obj)->err_type, obj_vcast<string>(obj)));
+		case ObjType::FN: return move(make_unique<Fn>(((Fn*)obj)->params, ((Fn*)obj)->body));
 		default: 
-			cerr << "[error] Object* dup(Object* obj)";
+			cerr << "[error] Object* obj_clone(Object* obj)";
 			exit(1);
 	}
 }
