@@ -1,13 +1,6 @@
-let fib = fn(x) {
-    if (x > 2) {
-        return fib(x-1) + fib(x-2);
-    } else {
-        return 1;
-    }
-};
+let a = "dkjnjkvdsn";
+let b = "dks";
 
-let c = fn(x,y) {
-	return x(y);
-};
-
-c(fib, 6);
+a;
+b;
+a+b+a+b;

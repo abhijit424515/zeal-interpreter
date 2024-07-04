@@ -62,7 +62,7 @@ struct String : Object {
 	}
 
 	string str() const override {
-		return *(string*)value;
+		return '\"' + *(string*)value + '\"';
 	}
 
 	~String() { delete (string*)value; }

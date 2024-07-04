@@ -53,7 +53,7 @@ fn							{ return FN; }
 {digit}+					{ yylval.name = new string(yytext); return INT_VAL; }
 {fraction}					{ yylval.name = new string(yytext); return FLT_VAL; }
 {letter}({letter}|{digit})*	{ yylval.name = new string(yytext); return IDF; }
-\"[^\"\\]*\"				{ yylval.name = new string(yytext); return STR_VAL; /* ignoring escape chars for now */ } 
+\"[^\"\\]*\"				{ yylval.name = new string(yytext+1, strlen(yytext)-2); return STR_VAL; /* ignoring escape chars for now */ } 
 
 {ws}						;
 .							{ fprintf(stderr, "unknown_token: %d\n", yytext[0]); exit(1); }

@@ -1,5 +1,4 @@
 FNAME = zeal
-
 CPP = g++
 BISON = bison
 FLEX = flex
@@ -10,25 +9,25 @@ PARSE = $(FNAME).y
 HEADERS = $(FNAME).hh
 
 OBJ = scan.o parse.tab.o
-CFLAGS = -g
+CFLAGS = --std=c++14 -g
 
 $(TGT): $(OBJ)
-	$(CPP) --std=c++14  $(OBJ) -o $(TGT) -ly 
+	$(CPP) $(CFLAGS) $(OBJ) -o $(TGT) -ly 
 
 scan.o: scan.c $(HEADERS)
-	$(CPP) --std=c++14  $(CFLAGS) -c $<
+	$(CPP) $(CFLAGS) -c $<
 
 parse.tab.o:parse.tab.c $(HEADERS)
-	$(CPP) --std=c++14  $(CFLAGS) -c  $<
+	$(CPP) $(CFLAGS) -c  $<
 
 %.o: %.cc $(HEADERS)
-	$(CPP) --std=c++14  $(CFLAGS) -c $<
+	$(CPP) $(CFLAGS) -c $<
 
 scan.c : $(SCAN) parse.tab.h
 	$(FLEX) -l --yylineno -o scan.c $(SCAN)
 
 parse.tab.c parse.tab.h : $(PARSE)
-	$(BISON) -b parse -dv  $(PARSE) -Wcounterexamples
+	$(BISON) -b parse -dv $(PARSE) -Wcounterexamples
 
 clean :
 	rm -f *.o *.output
