@@ -1,1 +1,0 @@
-rm -f t1 t2 c1 c2 ./scripts/dif ./scripts/c ./scripts/t

@@ -1,5 +1,0 @@
-calc.[yl]   : parser and scanner for simple calculator evaluating a single expression.
-Makefile    : A makefile for the above. Change SCAN and PARSE definitions to create a 
-              different version of the calculator. Command `make -e TGT=<x>' would set
-	      SCAN to <x>.l and PARSE to <x>.l to generate an executable called <x>.
-		
