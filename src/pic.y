@@ -45,6 +45,7 @@
 
 program
 	: stmt_list							{ $$ = new Program($1); $$->code(); }
+	| %empty							{ $$ = new Program(); }
 ;
 
 stmt_list
@@ -54,14 +55,17 @@ stmt_list
 
 block_stmt
 	: '{' stmt_list '}'					{ $$ = new BlockStmt($2); }
+	| '{' '}'							{ $$ = new BlockStmt(new StmtWrapper()); }
 ;
 
 fn
 	: FN '(' arg_list ')' block_stmt	{ $$ = new Const($3, $5); }
+	| FN '(' ')' block_stmt				{ $$ = new Const(new ArgWrapper(), $4); }
 ;
 
 call
 	: IDF '(' exp_list ')'				{ $$ = new Call(*($1), $3); }
+	| IDF '(' ')'						{ $$ = new Call(*($1), new ExpWrapper()); }
 ;
 
 exp_list

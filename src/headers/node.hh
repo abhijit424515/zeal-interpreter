@@ -101,6 +101,9 @@ struct ArgWrapper {
 	vector<string*> args;
 
 	ArgWrapper() {}
+	ArgWrapper(const ArgWrapper& a) {
+		for (auto arg : a.args) args.push_back(arg);
+	}
 	ArgWrapper(string* arg) {
 		args.push_back(arg);
 	}
@@ -132,10 +135,12 @@ struct ExpWrapper {
 struct BlockStmt: Node {
 	StmtWrapper *stmt_list;
 
+	BlockStmt(const BlockStmt& b): stmt_list(b.stmt_list) { ntype = NodeType::BLOCK; }
 	BlockStmt(StmtWrapper *s): stmt_list(s) { ntype = NodeType::BLOCK; }
 	~BlockStmt() { delete stmt_list; }
-	void code() { // [TODO] may need some changes
-		for (auto stmt : stmt_list->stmts) stmt->code();
+	void code() {
+		for (auto stmt : stmt_list->stmts)
+			stmt->code();
 	}
 };
 
@@ -145,19 +150,21 @@ struct Program: Node {
 	Program() { ntype = NodeType::PROG; }
 	Program(StmtWrapper *s): stmt_list(s) { ntype = NodeType::PROG; }
 	~Program() { delete stmt_list; }
-	void code() { // [TODO] may need some changes
-		for (auto stmt : stmt_list->stmts) stmt->code();
+	void code() {
+		if (stmt_list != nullptr)
+			for (auto stmt : stmt_list->stmts)
+				stmt->code();
 	}
 };
 
 // --------------------------------
 
 struct Fn: Object {
-	ArgWrapper* params;
-	BlockStmt* body;
+	shared_ptr<ArgWrapper> params;
+	shared_ptr<BlockStmt> body;
 
-	Fn(ArgWrapper* p, BlockStmt* b): params(p), body(b) { otype = ObjType::FN; }
-	// ~Fn() { delete params, body; }
+	Fn(ArgWrapper* p, BlockStmt* b): params(make_shared<ArgWrapper>(*p)), body(make_shared<BlockStmt>(*b)) { otype = ObjType::FN; }
+	Fn(shared_ptr<ArgWrapper> p, shared_ptr<BlockStmt> b): params(p), body(b) { otype = ObjType::FN; }
 	string str() const override {
 		string s = "fn(";
 		for (auto p: params->args) s += *p + ",";
