@@ -66,6 +66,11 @@ enum class InfixOp {
 	OR,
 };
 
+enum class BfType {
+	LEN, 
+	TYPE
+};
+
 struct Node {
 	NodeType ntype;
 };
@@ -104,6 +109,7 @@ struct ArgWrapper {
 	ArgWrapper(const ArgWrapper& a) {
 		for (auto arg : a.args) args.push_back(arg);
 	}
+	ArgWrapper(vector<string*> a): args(a) {}
 	ArgWrapper(string* arg) {
 		args.push_back(arg);
 	}
@@ -172,6 +178,23 @@ struct Fn: Object {
 		s += ");";
 		return s;
 	}
+};
+
+struct BuiltIn : Object {
+	string id;
+	BfType btype;
+	shared_ptr<ArgWrapper> args;
+
+	BuiltIn(const string& name, shared_ptr<ArgWrapper> args): id(name), args(args) { otype = ObjType::BF; }
+
+	string str() const override {
+		string s = "bf::" + id + "("; 
+		for (auto& arg : args->args) s += *arg + ",";
+		s += ")";
+		return s;
+	}
+
+	virtual unique_ptr<Object> code(vector<unique_ptr<Object>> exps) const = 0;
 };
 
 // --------------------------------
@@ -268,8 +291,23 @@ struct Call: Expression {
 			return make_unique<Error>(ErrorType::UNDEF, id);
 
 		unique_ptr<Object> obj = move(env_stack->find_and_clone(id));
-		if (obj->otype != ObjType::FN)
-			return make_unique<Error>(ErrorType::TYPE, id);
+
+		switch (obj->otype) {
+			case ObjType::BF: {
+				unique_ptr<BuiltIn> bf = static_unique_ptr_cast<BuiltIn>(move(obj));
+				if (bf->args->args.size() != args->exps.size())
+					return make_unique<Error>(ErrorType::ARG, "bf::" + id + "() expects " + to_string(bf->args->args.size()) + " arguments");
+
+				vector<unique_ptr<Object>> exps;
+				for (int i = 0; i < args->exps.size(); i++)
+					exps.push_back(move(args->exps[i]->code()));
+
+				value = move(bf->code(move(exps)));
+				return move(value);
+			}
+			case ObjType::FN: break;
+			default: return make_unique<Error>(ErrorType::TYPE, id);
+		}
 
 		unique_ptr<Fn> fn = static_unique_ptr_cast<Fn>(move(obj));
 		if (fn->params->args.size() != args->exps.size())

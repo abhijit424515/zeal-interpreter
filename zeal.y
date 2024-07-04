@@ -155,6 +155,8 @@ int main (int argc, char **argv) {
 
 	struct argp argp = { options, parse_opt };
 	argp_parse (&argp, argc, argv, 0, 0, 0);
+
+	init();
 	return yyparse();
 }
 

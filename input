@@ -1,6 +1,11 @@
-let a = "dkjnjkvdsn";
-let b = "dks";
+let a = "abc";
+let b = "defg";
 
 a;
 b;
-a+b+a+b;
+
+len(a);
+type(a);
+
+len(a+b+a);
+type(a+b+a);

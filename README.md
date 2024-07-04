@@ -14,6 +14,11 @@ Zeal uses an object model to represent entities like integers, doubles, strings,
 
 Run `make`, which will generate the `zeal` executable.
 
+# Latest Features
+
+- Built-in functions
+
 ## What's Next
 
-Upcoming features in Zeal include arrays, hashmaps and built-in functions.
+- Arrays
+- Hashmaps

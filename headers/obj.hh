@@ -11,6 +11,7 @@ enum class ObjType {
 	NONE,
 	ERR,
 	FN,
+	BF,
 	LIST,
 	DICT,
 };
@@ -56,13 +57,16 @@ struct Double : Object {
 };
 
 struct String : Object {
-	String(const string& v = "") {
+	bool quotes;
+
+	String(const string& v = "", bool q = true): quotes(q) {
 		otype = ObjType::STR;
 		value = (void*)(new string(v));
 	}
 
 	string str() const override {
-		return '\"' + *(string*)value + '\"';
+		string s = *(string*)value;
+		return quotes ? '\"' + s + '\"' : s;
 	}
 
 	~String() { delete (string*)value; }

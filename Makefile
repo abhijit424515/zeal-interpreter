@@ -18,7 +18,7 @@ scan.o: scan.c $(HEADERS)
 	$(CPP) $(CFLAGS) -c $<
 
 parse.tab.o:parse.tab.c $(HEADERS)
-	$(CPP) $(CFLAGS) -c  $<
+	$(CPP) $(CFLAGS) -c $<
 
 %.o: %.cc $(HEADERS)
 	$(CPP) $(CFLAGS) -c $<

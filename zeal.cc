@@ -1,19 +1,26 @@
 #include "zeal.hh"
 
-EnvStack *env_stack = new EnvStack();
+EnvStack *env_stack;
+
+void init() {
+	env_stack = new EnvStack();
+	env_stack->create("len", make_unique<Len>());
+	env_stack->create("type", make_unique<Type>());
+}
 
 // --------------------------------
 
 unordered_map<ObjType,string> objtype_str = {
-	{ ObjType::INT, "int" },
-	{ ObjType::FLT, "float" },
-	{ ObjType::STR, "string" },
-	{ ObjType::BOOL, "bool" },
-	{ ObjType::NONE, "null" },
-	{ ObjType::ERR, "error" },
-	{ ObjType::FN, "function" },
-	{ ObjType::LIST, "list" },
-	{ ObjType::DICT, "dict" },
+	{ ObjType::INT, "obj::int" },
+	{ ObjType::FLT, "obj::double" },
+	{ ObjType::STR, "obj::string" },
+	{ ObjType::BOOL, "obj::bool" },
+	{ ObjType::NONE, "obj::null" },
+	{ ObjType::ERR, "obj::error" },
+	{ ObjType::FN, "obj::func" },
+	{ ObjType::BF, "obj::builtin" },
+	{ ObjType::LIST, "obj::list" },
+	{ ObjType::DICT, "obj::dict" },
 };
 
 unordered_map<PrefixOp,string> prefix_str = {
@@ -53,6 +60,15 @@ unique_ptr<Object> obj_clone(Object* obj) {
 		case ObjType::NONE: return move(make_unique<Null>());
 		case ObjType::ERR: return move(make_unique<Error>(((Error*)obj)->err_type, obj_vcast<string>(obj)));
 		case ObjType::FN: return move(make_unique<Fn>(((Fn*)obj)->params, ((Fn*)obj)->body));
+		case ObjType::BF: {
+			switch (((BuiltIn*)obj)->btype) {
+				case BfType::LEN: return move(make_unique<Len>());
+				case BfType::TYPE: return move(make_unique<Type>());
+				default: 
+					cerr << "[error] Object* obj_clone(Object* obj) { ObjType::BF }";
+					exit(1);
+			}
+		}
 		default: 
 			cerr << "[error] Object* obj_clone(Object* obj)";
 			exit(1);
