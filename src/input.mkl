@@ -1,19 +1,9 @@
-// let fib = fn(x) {
-//     if (x > 2) {
-//         return fib(x-1) + fib(x-2);
-//     } else {
-//         return 1;
-//     }
-// };
-// 
-// fib(5);
+let fib = fn(x) {
+    if (x > 2) {
+        return fib(x-1) + fib(x-2);
+    } else {
+        return 1;
+    }
+};
 
-let a = 1;
-a*53;
-
-let b = fn(x) {
-	let d = x+5;
-	return d*2;
-}
-
-b(5);
+fib(8);

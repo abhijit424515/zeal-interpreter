@@ -3,6 +3,8 @@
 
 #include "obj.hh"
 
+extern unordered_map<ObjType,string> objtype_str;
+
 struct Scope {
 	unordered_map<string,unique_ptr<Object>> scope;
 
@@ -36,17 +38,35 @@ struct EnvStack {
 		if (stack.back()->scope.find(name) != stack.back()->scope.end()) return true;
 		return false;
 	}
-	std::unique_ptr<Object> get(const std::string& name) {
+	unique_ptr<Object> find_and_own(const string& name) {
 		for (auto it = stack.rbegin(); it != stack.rend(); ++it)
 			if ((*it)->scope.find(name) != (*it)->scope.end()) 
-				return std::move((*it)->scope.find(name)->second);
+				return move((*it)->scope.find(name)->second);
 				
-		std::cerr << "[error] std::unique_ptr<Object> get(const std::string& name): " << name << " not found\n";
+		cerr << "[error] unique_ptr<Object> get(const string& name): " << name << " not found\n";
 		exit(1);
 	}
-	void insert(const std::string& k, std::unique_ptr<Object> v) {
-        stack.back()->insert(k, std::move(v));
+	unique_ptr<Object> find_and_clone(const string& name) {
+		for (auto it = stack.rbegin(); it != stack.rend(); ++it)
+			if ((*it)->scope.find(name) != (*it)->scope.end()) {
+				return move(obj_clone((*it)->scope.find(name)->second.get()));
+			}
+				
+		cerr << "[error] unique_ptr<Object> get(const string& name): " << name << " not found\n";
+		exit(1);
+	}
+	void create(const string& k, unique_ptr<Object> v) {
+        stack.back()->insert(k, move(v));
     }
+	void update(const string& k, unique_ptr<Object> v) {
+		for (auto it = stack.rbegin(); it != stack.rend(); ++it)
+			if ((*it)->scope.find(k) != (*it)->scope.end()) {
+				(*it)->scope[k] = move(v);
+				return;
+			}
+		cerr << "[error] void update(const string& k, unique_ptr<Object> v): " << k << " not found\n";
+		exit(1);
+	}
 	void push_scope() {
 		stack.push_back(std::make_unique<Scope>());
 	}

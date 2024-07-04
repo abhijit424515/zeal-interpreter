@@ -157,7 +157,7 @@ struct Fn: Object {
 	BlockStmt* body;
 
 	Fn(ArgWrapper* p, BlockStmt* b): params(p), body(b) { otype = ObjType::FN; }
-	~Fn() { delete params, body; }
+	// ~Fn() { delete params, body; }
 	string str() const override {
 		string s = "fn(";
 		for (auto p: params->args) s += *p + ",";
@@ -181,7 +181,7 @@ struct LetStmt: Statement {
 			v = make_unique<Error>(ErrorType::REDECL, id);
 			return;
 		}
-		env_stack->insert(id, move(v));
+		env_stack->create(id, move(v));
 	}
 };
 
@@ -197,7 +197,7 @@ struct AsgStmt: Statement {
 			v = make_unique<Error>(ErrorType::UNDEF, id);
 			return;
 		}
-		env_stack->insert(id, move(v));
+		env_stack->update(id, move(v));
 	}
 };
 
@@ -208,7 +208,7 @@ struct RetStmt: Statement {
 	~RetStmt() { delete value; }
 	void code() override {
 		unique_ptr<Object> v = move(value->code());
-		env_stack->insert("return", move(v));
+		env_stack->update("return", move(v));
 	}
 };
 
@@ -260,7 +260,7 @@ struct Call: Expression {
 		if (env_stack->undefined(id))
 			return make_unique<Error>(ErrorType::UNDEF, id);
 
-		unique_ptr<Object> obj = env_stack->get(id);
+		unique_ptr<Object> obj = move(env_stack->find_and_clone(id));
 		if (obj->otype != ObjType::FN)
 			return make_unique<Error>(ErrorType::TYPE, id);
 
@@ -273,7 +273,7 @@ struct Call: Expression {
 
 		// bind the return value to the local scope
 		value = make_unique<Null>();
-		env_stack->insert("return", move(value));
+		env_stack->create("return", move(value));
 
 		// evaluate the arg expressions, then bind them to the local scope 
 		for (int i = 0; i < args->exps.size(); i++) {
@@ -282,7 +282,7 @@ struct Call: Expression {
 				return make_unique<Error>(ErrorType::REDECL, name);
 
 			unique_ptr<Object> v = move(args->exps[i]->code());
-			env_stack->insert(name, move(v));
+			env_stack->create(name, move(v));
 		}
 
 		// execute the function body 
@@ -290,7 +290,7 @@ struct Call: Expression {
 			fn->body->stmt_list->stmts[i]->code();
 
 		// retrieve return value from the local scope before popping it
-		value = env_stack->get("return");
+		value = env_stack->find_and_own("return");
 		env_stack->pop_scope();
 		return move(value);
 	}
@@ -336,10 +336,8 @@ struct Idf : Expression {
 		if (env_stack->undefined(name))
 			return make_unique<Error>(ErrorType::UNDEF, name);
 		else {
-			unique_ptr<Object> v = env_stack->get(name);
-			unique_ptr<Object> v_ = move(obj_clone(v.get()));
-			env_stack->insert(name, move(v));
-			return move(v_);
+			unique_ptr<Object> v = move(env_stack->find_and_clone(name));
+			return move(v);
 		}
 	}
 };
