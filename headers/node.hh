@@ -145,8 +145,10 @@ struct BlockStmt: Node {
 	BlockStmt(StmtWrapper *s): stmt_list(s) { ntype = NodeType::BLOCK; }
 	~BlockStmt() { delete stmt_list; }
 	void code() {
+		env_stack->push_scope();
 		for (auto stmt : stmt_list->stmts)
 			stmt->code();
+		env_stack->pop_scope();
 	}
 };
 

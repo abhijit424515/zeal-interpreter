@@ -1,11 +1,24 @@
-let a = "abc";
-let b = "defg";
+let newnewAdder = fn(a, b) {
+    return fn(c) { return a + b + c; };
+};
 
-a;
+let adder = newnewAdder(1, 2);
+
+let b = adder(8);
 b;
 
-len(a);
-type(a);
+// pending to fix the above
 
-len(a+b+a);
-type(a+b+a);
+// --------------------------------
+
+// let x = 2;
+
+// let f = fn() {
+//     x = 3;
+    
+//     let x = 4;
+//     x;
+// };
+
+// f();
+// x;
